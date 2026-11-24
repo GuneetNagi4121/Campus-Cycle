@@ -27,8 +27,17 @@ export const stationsApi = {
   remove: (id) => api.delete(`/stations/${id}`).then((r) => r.data),
 };
 
+export const mapApi = {
+  /** The campus map image, its scale and the traced road network. */
+  config: () => api.get('/map').then((r) => r.data.map),
+  /** A route along the campus roads between two stations. */
+  route: (from, to) => api.get('/map/route', { params: { from, to } }).then((r) => r.data.route),
+};
+
 export const bicyclesApi = {
   list: (params) => api.get('/bicycles', { params }).then((r) => r.data.bicycles),
+  /** Find one bicycle by its QR value or printed cycle code. */
+  lookup: (code) => api.get('/bicycles/lookup', { params: { code } }).then((r) => r.data.bicycle),
   get: (id) => api.get(`/bicycles/${id}`).then((r) => r.data.bicycle),
   stats: () => api.get('/bicycles/stats').then((r) => r.data.stats),
   create: (payload) => api.post('/bicycles', payload).then((r) => r.data.bicycle),

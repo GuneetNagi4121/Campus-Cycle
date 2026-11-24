@@ -19,7 +19,8 @@
  * Usage:  npm run test:e2e   (from backend/, with a reachable database)
  */
 
-process.env.NODE_ENV = 'test';
+// Must be first: selects the *_test database and refuses any other.
+const { assertTestDatabase } = require('./testDb');
 
 const fs = require('fs');
 const path = require('path');
@@ -61,6 +62,15 @@ async function api(method, endpoint, { token, body } = {}) {
   return { status: res.status, data };
 }
 
+/**
+ * Students are never sent QR values by the API; in real use they read the
+ * code off the label on the bicycle. Tests "read the label" from the database.
+ */
+async function qrLabel(bike) {
+  const { rows } = await pool.query('SELECT qr_code FROM bicycles WHERE id = $1', [bike.id]);
+  return rows[0].qr_code;
+}
+
 async function login(email, password) {
   const { data } = await api('POST', '/api/auth/login', { body: { email, password } });
   return data && data.token;
@@ -83,6 +93,7 @@ async function resetDatabase() {
 
 async function main() {
   console.log('Resetting database (schema + seed)...');
+  await assertTestDatabase(pool);
   await resetDatabase();
 
   const server = app.listen(0);
@@ -102,9 +113,13 @@ async function main() {
 
     const available = (await api('GET', '/api/bicycles?status=AVAILABLE', { token: aditi })).data.bicycles;
     check(available.length > 0, 'available bicycles are listed');
+    check(
+      available.every((b) => b.qr_code === undefined),
+      'students are not sent QR values (they must scan the label)'
+    );
     const bike = available[0];
 
-    const start = await api('POST', '/api/rentals', { token: aditi, body: { qr_code: bike.qr_code } });
+    const start = await api('POST', '/api/rentals', { token: aditi, body: { qr_code: await qrLabel(bike) } });
     check(start.status === 201, 'rental starts (HTTP 201)');
     check(start.data.rental && start.data.rental.status === 'ACTIVE', 'rental status is ACTIVE');
     const rentalId = start.data.rental.id;
@@ -150,8 +165,8 @@ async function main() {
     const freshAvailable = (await api('GET', '/api/bicycles?status=AVAILABLE', { token: aditi })).data.bicycles;
     const target = freshAvailable[0];
     const [r1, r2] = await Promise.all([
-      api('POST', '/api/rentals', { token: aditi, body: { qr_code: target.qr_code } }),
-      api('POST', '/api/rentals', { token: sneha, body: { qr_code: target.qr_code } }),
+      api('POST', '/api/rentals', { token: aditi, body: { qr_code: await qrLabel(target) } }),
+      api('POST', '/api/rentals', { token: sneha, body: { qr_code: await qrLabel(target) } }),
     ]);
     const successes = [r1, r2].filter((r) => r.status === 201).length;
     const rejections = [r1, r2].filter((r) => r.status === 409 || r.status === 404).length;

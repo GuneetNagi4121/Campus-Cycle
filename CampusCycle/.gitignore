@@ -6,6 +6,9 @@ node_modules/
 .env
 .env.local
 .env.*.local
+
+# Local-only notes (demo credentials etc.)
+*.local.md
 backend/.env
 frontend/.env
 

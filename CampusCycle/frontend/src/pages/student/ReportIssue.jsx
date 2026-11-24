@@ -52,7 +52,7 @@ export default function ReportIssue() {
         bicyclesApi.list(),
         rentalsApi.active().catch(() => null),
       ]);
-      setBikes(list);
+      setBikes(list.filter((b) => b.status !== 'RETIRED'));
       setActiveRide(active);
 
       const preset = params.get('bicycle');
@@ -79,19 +79,21 @@ export default function ReportIssue() {
 
   const isSafetyIssue = SAFETY_SEVERITIES.includes(severity);
 
-  /** Resolve a typed/scanned QR code to a bicycle in the loaded list. */
-  function applyQrLookup() {
-    const code = qrLookup.trim().toLowerCase();
+  /**
+   * Resolve a typed/scanned QR or cycle code to a bicycle. The lookup runs on
+   * the server because students are never sent QR values.
+   */
+  async function applyQrLookup() {
+    const code = qrLookup.trim();
     if (!code) return;
-    const match = bikes.find(
-      (b) => b.qr_code?.toLowerCase() === code || b.cycle_code?.toLowerCase() === code
-    );
-    if (match) {
+    try {
+      const match = await bicyclesApi.lookup(code);
+      if (!bikes.some((b) => b.id === match.id)) setBikes((list) => [...list, match]);
       setBicycleId(String(match.id));
       setErrors((e) => ({ ...e, bicycle_id: undefined }));
       toast.success(`Selected ${match.cycle_code}.`);
-    } else {
-      toast.error('No cycle matches that code.');
+    } catch (err) {
+      toast.error(err.status === 404 ? 'No cycle matches that code.' : err.message);
     }
   }
 

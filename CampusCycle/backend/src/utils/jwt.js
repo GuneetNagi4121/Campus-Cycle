@@ -9,7 +9,7 @@ const env = require('../config/env');
  * @returns {string}
  */
 function signToken(payload) {
-  return jwt.sign(payload, env.jwtSecret, { expiresIn: env.jwtExpiresIn });
+  return jwt.sign(payload, env.jwtSecret, { expiresIn: env.jwtExpiresIn, algorithm: 'HS256' });
 }
 
 /**
@@ -18,7 +18,7 @@ function signToken(payload) {
  * @returns {object}
  */
 function verifyToken(token) {
-  return jwt.verify(token, env.jwtSecret);
+  return jwt.verify(token, env.jwtSecret, { algorithms: ['HS256'] });
 }
 
 module.exports = { signToken, verifyToken };

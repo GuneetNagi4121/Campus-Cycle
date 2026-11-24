@@ -11,6 +11,7 @@ router.use(authenticate);
 
 // Admin-only aggregate — declared before "/:id" so it is not shadowed.
 router.get('/stats', authorize(ROLES.ADMIN), bicycleController.stats);
+router.get('/lookup', bicycleController.lookup);
 
 // Readable by any authenticated user.
 router.get('/', bicycleController.list);

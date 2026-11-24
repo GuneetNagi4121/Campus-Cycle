@@ -99,6 +99,12 @@ async function createReport(userId, body) {
       });
     }
 
+    if (bike.status === BICYCLE_STATUS.RETIRED) {
+      throw ApiError.unprocessable('That bicycle has been retired from the fleet', {
+        bicycle_id: 'Retired bicycle',
+      });
+    }
+
     const report = await maintenanceModel.create(
       { bicycleId, reportedBy: userId, category, description, severity },
       client

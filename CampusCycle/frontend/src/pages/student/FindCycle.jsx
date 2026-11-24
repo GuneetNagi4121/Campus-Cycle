@@ -51,7 +51,6 @@ export default function FindCycle() {
       if (!q) return true;
       return (
         b.cycle_code?.toLowerCase().includes(q) ||
-        b.qr_code?.toLowerCase().includes(q) ||
         b.station_name?.toLowerCase().includes(q)
       );
     });
@@ -139,7 +138,7 @@ export default function FindCycle() {
                       </span>
                       <div className="min-w-0">
                         <p className="truncate font-medium text-slate-900">{bike.cycle_code}</p>
-                        <p className="truncate font-mono text-xs text-slate-400">{bike.qr_code}</p>
+                        <p className="truncate text-xs text-slate-400">{bike.model || 'Scan its QR to unlock'}</p>
                       </div>
                     </div>
                     <Button

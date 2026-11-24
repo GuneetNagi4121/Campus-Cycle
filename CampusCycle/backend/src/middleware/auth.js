@@ -2,12 +2,17 @@
 
 const { verifyToken } = require('../utils/jwt');
 const ApiError = require('../utils/ApiError');
+const { pool } = require('../config/db');
 
 /**
  * Authentication middleware.
  * Reads a Bearer token, verifies it, and attaches `req.user = { id, role }`.
+ *
+ * The role is re-read from the database rather than trusted from the token,
+ * so a deleted account or a changed role takes effect immediately instead of
+ * when the token expires.
  */
-function authenticate(req, res, next) {
+async function authenticate(req, res, next) {
   const header = req.headers.authorization || '';
   const [scheme, token] = header.split(' ');
 
@@ -15,12 +20,20 @@ function authenticate(req, res, next) {
     return next(ApiError.unauthorized('Missing or malformed Authorization header'));
   }
 
+  let payload;
   try {
-    const payload = verifyToken(token);
-    req.user = { id: payload.id, role: payload.role };
-    return next();
+    payload = verifyToken(token);
   } catch (err) {
     return next(ApiError.unauthorized('Invalid or expired token'));
+  }
+
+  try {
+    const { rows } = await pool.query('SELECT id, role FROM users WHERE id = $1', [payload.id]);
+    if (!rows[0]) return next(ApiError.unauthorized('This account no longer exists'));
+    req.user = { id: rows[0].id, role: rows[0].role };
+    return next();
+  } catch (err) {
+    return next(err);
   }
 }
 

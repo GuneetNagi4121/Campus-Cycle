@@ -12,6 +12,7 @@ import {
   BarChart3,
   Map as MapIcon,
   AlertTriangle,
+  Users,
 } from 'lucide-react';
 import PageHeader from '../../components/ui/PageHeader';
 import StatCard from '../../components/ui/StatCard';
@@ -45,6 +46,17 @@ export default function AdminDashboard() {
   useEffect(() => {
     load();
   }, [load]);
+
+  if (!loading && !data) {
+    return (
+      <Card className="mx-auto max-w-md p-6 text-center">
+        <p className="font-semibold text-slate-900">Could not load the overview</p>
+        <Button className="mt-4" variant="secondary" onClick={load}>
+          Try again
+        </Button>
+      </Card>
+    );
+  }
 
   if (loading || !data) {
     return (
@@ -110,47 +122,75 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-        <StatCard label="Total cycles" value={b.TOTAL} icon={Bike} tone="slate" />
-        <StatCard label="Available" value={b.AVAILABLE} icon={CheckCircle2} tone="emerald" />
-        <StatCard label="In use" value={b.IN_USE} icon={Activity} tone="blue" />
-        <StatCard label="Maintenance" value={b.MAINTENANCE} icon={Wrench} tone="amber" />
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <StatCard label="Registered students" value={data.students} icon={Users} tone="violet" />
+        <StatCard
+          label="Total bicycles"
+          value={b.FLEET ?? b.TOTAL}
+          icon={Bike}
+          tone="slate"
+          hint={b.RETIRED ? `${b.RETIRED} retired not counted` : 'Working fleet'}
+        />
+        <StatCard
+          label="Available bicycles"
+          value={b.AVAILABLE}
+          icon={CheckCircle2}
+          tone="emerald"
+          hint={`${b.MAINTENANCE} in maintenance`}
+        />
+        <StatCard label="Currently rented" value={b.IN_USE} icon={Activity} tone="blue" />
         <StatCard
           label="Stations"
           value={data.stations.total}
           icon={Building2}
           tone="violet"
-          hint={`${data.stations.active} active · ${data.stations.mapped ?? 0} mapped`}
+          hint={`${data.stations.active} active · ${data.stations.full} full · ${data.stations.empty} empty`}
         />
-        <StatCard label="Active rides" value={data.activeRentals} icon={Route} tone="blue" />
+        <StatCard label="Active rides" value={data.rides.active} icon={Route} tone="blue" />
+        <StatCard
+          label="Completed rides"
+          value={data.rides.completed}
+          icon={CheckCircle2}
+          tone="emerald"
+          hint={`${data.rides.total} rides in total`}
+        />
+        <StatCard
+          label="Pending maintenance"
+          value={data.pendingMaintenance}
+          icon={Wrench}
+          tone="amber"
+          hint={`${data.maintenance?.OPEN ?? 0} open · ${data.maintenance?.IN_PROGRESS ?? 0} in progress`}
+        />
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <StatCard
-          label="Open reports"
-          value={data.maintenance?.OPEN ?? 0}
+          label="Maintenance reports (all time)"
+          value={data.maintenance?.TOTAL ?? 0}
           icon={Wrench}
-          tone="rose"
-          hint={`${data.maintenance?.TOTAL ?? 0} all time`}
+          tone="slate"
+          hint={`${(data.maintenance?.RESOLVED ?? 0) + (data.maintenance?.CLOSED ?? 0)} resolved or closed`}
         />
         <StatCard
-          label="Being repaired"
-          value={data.maintenance?.IN_PROGRESS ?? 0}
-          icon={Activity}
-          tone="amber"
+          label="Dock capacity"
+          value={data.stations.capacity}
+          icon={Building2}
+          tone="slate"
+          hint="Across all stations"
         />
         <StatCard
           label="Open geofence alerts"
           value={data.geofence?.OPEN ?? 0}
           icon={ShieldAlert}
           tone="rose"
-          hint={`${data.geofence?.TOTAL ?? 0} all time`}
+          hint="Simulated GPS readings"
         />
         <StatCard
-          label="Resolved alerts"
-          value={data.geofence?.RESOLVED ?? 0}
-          icon={CheckCircle2}
+          label="Stations on the map"
+          value={data.stations.mapped}
+          icon={MapIcon}
           tone="emerald"
+          hint={`of ${data.stations.total}`}
         />
       </div>
 

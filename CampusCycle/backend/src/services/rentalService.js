@@ -18,6 +18,7 @@ const UNAVAILABLE_REASON = {
   [BICYCLE_STATUS.IN_USE]: 'This bicycle is already in use',
   [BICYCLE_STATUS.RESERVED]: 'This bicycle is reserved',
   [BICYCLE_STATUS.MAINTENANCE]: 'This bicycle is under maintenance',
+  [BICYCLE_STATUS.RETIRED]: 'This bicycle has been retired from the fleet',
 };
 
 const DEFAULT_PAGE_SIZE = 25;
@@ -61,6 +62,16 @@ async function startRental(userId, qrCodeRaw) {
       // 3) The bicycle must be available.
       if (bike.status !== BICYCLE_STATUS.AVAILABLE) {
         throw ApiError.conflict(UNAVAILABLE_REASON[bike.status] || 'This bicycle is not available');
+      }
+
+      // 3b) ...and its station must be in service.
+      if (bike.station_id) {
+        const station = await stationModel.findById(bike.station_id, client);
+        if (station && station.status !== STATION_STATUS.ACTIVE) {
+          throw ApiError.conflict(
+            `${station.name} is temporarily unavailable, so its cycles cannot be rented right now`
+          );
+        }
       }
 
       // 4) ...and must not be on safety hold from a reported issue.
@@ -125,13 +136,22 @@ async function returnRental({ rentalId, userId, role, endStationIdRaw }) {
       throw ApiError.forbidden('You can only end your own ride');
     }
 
-    // 2) Validate the return station (must exist and be registered/active).
-    const station = await stationModel.findById(endStationId, client);
+    // 2) Validate the return station (must exist, be active and have a free
+    //    dock). The station row is locked so two riders returning to the
+    //    same station at once cannot both take its last free dock.
+    const station = await stationModel.findByIdForUpdate(endStationId, client);
     if (!station) {
       throw ApiError.unprocessable('Return station does not exist', { end_station_id: 'Unknown station' });
     }
     if (station.status !== STATION_STATUS.ACTIVE) {
       throw ApiError.conflict('That station is not currently active. Choose another return station.');
+    }
+    const parked = await stationModel.countBicycles(endStationId, client);
+    if (parked >= station.capacity) {
+      throw ApiError.conflict(
+        `${station.name} is full (${parked}/${station.capacity} docks in use). Choose another return station.`,
+        { end_station_id: 'Station full' }
+      );
     }
 
     // 3) Lock the bike, complete the rental, and park the bike.

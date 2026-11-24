@@ -9,9 +9,18 @@ const STATUS_OPTIONS = [
   { value: 'AVAILABLE', label: 'Available' },
   { value: 'RESERVED', label: 'Reserved' },
   { value: 'MAINTENANCE', label: 'Maintenance' },
+  { value: 'RETIRED', label: 'Retired (out of fleet)' },
 ];
 
-const empty = { cycle_code: '', qr_code: '', station_id: '', status: 'AVAILABLE' };
+const empty = { cycle_code: '', qr_code: '', model: '', station_id: '', status: 'AVAILABLE' };
+
+/** A random, unambiguous QR value (no 0/O/1/I). */
+function generateQr() {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  return `CC-QR-${[...bytes].map((b) => alphabet[b % alphabet.length]).join('')}`;
+}
 
 export default function BicycleFormModal({ open, onClose, onSaved, bicycle, stations }) {
   const toast = useToast();
@@ -28,6 +37,7 @@ export default function BicycleFormModal({ open, onClose, onSaved, bicycle, stat
         ? {
             cycle_code: bicycle.cycle_code || '',
             qr_code: bicycle.qr_code || '',
+            model: bicycle.model || '',
             station_id: bicycle.station_id ? String(bicycle.station_id) : '',
             status: bicycle.status === 'IN_USE' ? 'AVAILABLE' : bicycle.status || 'AVAILABLE',
           }
@@ -36,6 +46,7 @@ export default function BicycleFormModal({ open, onClose, onSaved, bicycle, stat
   }, [open, bicycle]);
 
   const stationRequired = form.status === 'AVAILABLE' || form.status === 'RESERVED';
+  const stationDisabled = form.status === 'RETIRED';
 
   function update(key) {
     return (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
@@ -47,8 +58,10 @@ export default function BicycleFormModal({ open, onClose, onSaved, bicycle, stat
     const payload = {
       cycle_code: form.cycle_code.trim(),
       qr_code: form.qr_code.trim(),
+      model: form.model.trim(),
       status: form.status,
-      station_id: form.station_id === '' ? null : Number(form.station_id),
+      station_id:
+        form.status === 'RETIRED' || form.station_id === '' ? null : Number(form.station_id),
     };
     setSaving(true);
     try {
@@ -91,22 +104,48 @@ export default function BicycleFormModal({ open, onClose, onSaved, bicycle, stat
             id="cycle_code"
             value={form.cycle_code}
             onChange={update('cycle_code')}
-            placeholder="CYCLE-TC-021"
+            placeholder="CC-20-1"
             invalid={!!errors.cycle_code}
             className="font-mono"
             required
           />
         </Field>
 
-        <Field label="QR code" htmlFor="qr_code" error={errors.qr_code} required>
+        <Field
+          label="QR code value"
+          htmlFor="qr_code"
+          error={errors.qr_code}
+          hint="Encoded in the printed label. Must be unique."
+          required
+        >
+          <div className="flex gap-2">
+            <Input
+              id="qr_code"
+              value={form.qr_code}
+              onChange={update('qr_code')}
+              placeholder="CC-QR-7K3M9PQX"
+              invalid={!!errors.qr_code}
+              className="font-mono"
+              required
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setForm((f) => ({ ...f, qr_code: generateQr() }))}
+            >
+              Generate
+            </Button>
+          </div>
+        </Field>
+
+        <Field label="Model" htmlFor="model" error={errors.model} hint="Optional">
           <Input
-            id="qr_code"
-            value={form.qr_code}
-            onChange={update('qr_code')}
-            placeholder="QR-CYCLE-021"
-            invalid={!!errors.qr_code}
-            className="font-mono"
-            required
+            id="model"
+            value={form.model}
+            onChange={update('model')}
+            placeholder="Btwin MyBike City"
+            maxLength={80}
+            invalid={!!errors.model}
           />
         </Field>
 
@@ -126,20 +165,31 @@ export default function BicycleFormModal({ open, onClose, onSaved, bicycle, stat
             htmlFor="station_id"
             error={errors.station_id}
             required={stationRequired}
-            hint={stationRequired ? undefined : 'Optional for maintenance'}
+            hint={
+              stationDisabled
+                ? 'Retired cycles are not parked at a station'
+                : stationRequired
+                  ? undefined
+                  : 'Optional for maintenance'
+            }
           >
             <Select
               id="station_id"
-              value={form.station_id}
+              value={stationDisabled ? '' : form.station_id}
               onChange={update('station_id')}
               invalid={!!errors.station_id}
+              disabled={stationDisabled}
             >
               <option value="">— None —</option>
-              {stations.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
+              {stations.map((s) => {
+                const isCurrent = bicycle && bicycle.station_id === s.id;
+                const full = s.free_docks === 0 && !isCurrent;
+                return (
+                  <option key={s.id} value={s.id} disabled={full}>
+                    {s.name} — {full ? 'full' : `${s.free_docks} free`}
+                  </option>
+                );
+              })}
             </Select>
           </Field>
         </div>

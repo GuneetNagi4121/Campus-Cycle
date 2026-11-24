@@ -117,11 +117,19 @@ async function findActiveDetailByUser(userId, db = pool) {
  * @param {Array} params  mutated — parameter values in order
  */
 function buildFilters(
-  { userId, status, bicycleId, stationId, from, to } = {},
+  { userId, status, bicycleId, stationId, from, to, search } = {},
   params = []
 ) {
   const conditions = [];
 
+  if (search) {
+    // Escape LIKE wildcards so the search text is matched literally.
+    params.push(`%${String(search).replace(/[%_\\]/g, (c) => '\\' + c)}%`);
+    const p = `$${params.length}`;
+    conditions.push(
+      `(u.name ILIKE ${p} OR u.email ILIKE ${p} OR b.cycle_code ILIKE ${p} OR b.qr_code ILIKE ${p})`
+    );
+  }
   if (userId) {
     params.push(userId);
     conditions.push(`r.user_id = $${params.length}`);
@@ -164,7 +172,11 @@ async function listPaged(filters = {}, { limit = 25, offset = 0 } = {}, db = poo
   const where = buildFilters(filters, params);
 
   const countResult = await db.query(
-    `SELECT COUNT(*)::int AS total FROM rentals r ${where}`,
+    `SELECT COUNT(*)::int AS total
+     FROM rentals r
+     JOIN users u    ON u.id = r.user_id
+     JOIN bicycles b ON b.id = r.bicycle_id
+     ${where}`,
     params
   );
 

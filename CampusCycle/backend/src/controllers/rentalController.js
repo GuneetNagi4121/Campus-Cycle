@@ -57,6 +57,8 @@ const listAll = asyncHandler(async (req, res) => {
     status,
     bicycle_id: bicycleId,
     station_id: stationId,
+    user_id: userIdFilter,
+    search,
     from,
     to,
     limit,
@@ -73,6 +75,9 @@ const listAll = asyncHandler(async (req, res) => {
       status,
       bicycleId: bicycleId ? toPositiveInt(bicycleId) : undefined,
       stationId: stationId ? toPositiveInt(stationId) : undefined,
+      userId: userIdFilter ? toPositiveInt(userIdFilter) : undefined,
+      search:
+        typeof search === 'string' && search.trim() ? search.trim().slice(0, 100) : undefined,
       from: from || undefined,
       to: to || undefined,
     },

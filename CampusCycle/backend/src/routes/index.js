@@ -11,6 +11,7 @@ const adminRoutes = require('./adminRoutes');
 const maintenanceRoutes = require('./maintenanceRoutes');
 const analyticsRoutes = require('./analyticsRoutes');
 const geofenceRoutes = require('./geofenceRoutes');
+const mapRoutes = require('./mapRoutes');
 
 const router = express.Router();
 
@@ -27,5 +28,8 @@ router.use('/admin', adminRoutes);
 router.use('/maintenance', maintenanceRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/geofence', geofenceRoutes);
+
+// --- Campus map (illustrated map, road network, route planning) -------------
+router.use('/map', mapRoutes);
 
 module.exports = router;

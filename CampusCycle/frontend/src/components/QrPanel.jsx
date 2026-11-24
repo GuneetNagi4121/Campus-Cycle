@@ -5,24 +5,32 @@ import Button from './ui/Button';
 import { cn } from '../utils/format';
 
 /**
- * QR entry for a rental. Manual entry always works; camera scanning is offered
- * as an enhancement when the browser supports the BarcodeDetector API.
+ * QR entry for a rental.
+ *
+ *  - Camera scanning uses the browser's native BarcodeDetector where it exists
+ *    (Chrome/Edge/Android) and falls back to the jsQR decoder elsewhere
+ *    (Safari on iPhone, Firefox). Browsers only allow the camera on HTTPS or
+ *    on localhost.
+ *  - Manual entry always works — type the code printed under the QR label.
  */
-export default function QrPanel({ value, onChange, disabled }) {
-  const supportsCamera =
+export default function QrPanel({ value, onChange, disabled, autoFocus = false }) {
+  const canUseCamera =
     typeof window !== 'undefined' &&
-    'BarcodeDetector' in window &&
-    !!navigator.mediaDevices?.getUserMedia;
+    !!navigator.mediaDevices?.getUserMedia &&
+    (window.isSecureContext ?? true);
 
   const [scanning, setScanning] = useState(false);
   const [camError, setCamError] = useState('');
   const videoRef = useRef(null);
+  const canvasRef = useRef(null);
   const streamRef = useRef(null);
-  const rafRef = useRef(null);
+  const timerRef = useRef(null);
+  const activeRef = useRef(false);
 
   function stopCamera() {
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    rafRef.current = null;
+    activeRef.current = false;
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = null;
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
@@ -30,38 +38,78 @@ export default function QrPanel({ value, onChange, disabled }) {
     setScanning(false);
   }
 
-  useEffect(() => stopCamera, []); // clean up on unmount
+  useEffect(() => stopCamera, []); // release the camera on unmount
+
+  async function buildDecoder() {
+    if ('BarcodeDetector' in window) {
+      try {
+        const formats = await window.BarcodeDetector.getSupportedFormats?.();
+        if (!formats || formats.includes('qr_code')) {
+          const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
+          return async (video) => {
+            const codes = await detector.detect(video);
+            return codes[0]?.rawValue || null;
+          };
+        }
+      } catch {
+        /* fall through to jsQR */
+      }
+    }
+    const { default: jsQR } = await import('jsqr');
+    return async (video) => {
+      const canvas = canvasRef.current;
+      if (!canvas || !video.videoWidth) return null;
+      const scale = Math.min(1, 640 / video.videoWidth);
+      canvas.width = Math.round(video.videoWidth * scale);
+      canvas.height = Math.round(video.videoHeight * scale);
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const result = jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
+      return result?.data || null;
+    };
+  }
 
   async function startCamera() {
     setCamError('');
     try {
-      const detector = new window.BarcodeDetector({ formats: ['qr_code'] });
+      const decode = await buildDecoder();
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
+        video: { facingMode: { ideal: 'environment' } },
+        audio: false,
       });
       streamRef.current = stream;
+      activeRef.current = true;
       setScanning(true);
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
+      // Wait a frame for the <video> element to mount.
+      await new Promise((r) => requestAnimationFrame(r));
+      const video = videoRef.current;
+      if (!video) throw new Error('no video element');
+      video.srcObject = stream;
+      await video.play();
+
       const tick = async () => {
-        if (!videoRef.current || !streamRef.current) return;
+        if (!activeRef.current) return;
         try {
-          const codes = await detector.detect(videoRef.current);
-          if (codes.length > 0) {
-            onChange(codes[0].rawValue.trim());
+          const text = await decode(video);
+          if (text) {
+            onChange(text.trim());
             stopCamera();
             return;
           }
         } catch {
-          /* transient det: ignore and keep scanning */
+          /* a frame that failed to decode — keep scanning */
         }
-        rafRef.current = requestAnimationFrame(tick);
+        timerRef.current = setTimeout(tick, 200);
       };
-      rafRef.current = requestAnimationFrame(tick);
-    } catch {
-      setCamError('Camera unavailable. Please enter the code manually.');
+      tick();
+    } catch (err) {
+      const denied = err && (err.name === 'NotAllowedError' || err.name === 'SecurityError');
+      setCamError(
+        denied
+          ? 'Camera permission was denied. Allow camera access, or enter the code manually.'
+          : 'Could not start the camera on this device. Enter the code printed on the label instead.'
+      );
       stopCamera();
     }
   }
@@ -71,10 +119,14 @@ export default function QrPanel({ value, onChange, disabled }) {
       {scanning ? (
         <div className="relative overflow-hidden rounded-xl bg-slate-900">
           {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-          <video ref={videoRef} className="h-52 w-full object-cover" muted playsInline />
+          <video ref={videoRef} className="h-56 w-full object-cover" muted playsInline />
+          <canvas ref={canvasRef} className="hidden" />
           <div className="pointer-events-none absolute inset-0 grid place-items-center">
-            <div className="h-32 w-32 rounded-lg border-2 border-white/80 shadow-[0_0_0_100vmax_rgba(15,23,42,0.35)]" />
+            <div className="h-36 w-36 rounded-lg border-2 border-white/80 shadow-[0_0_0_100vmax_rgba(15,23,42,0.35)]" />
           </div>
+          <p className="absolute inset-x-0 bottom-2 text-center text-xs font-medium text-white/90">
+            Point the camera at the QR label on the cycle
+          </p>
           <button
             type="button"
             onClick={stopCamera}
@@ -84,43 +136,45 @@ export default function QrPanel({ value, onChange, disabled }) {
           </button>
         </div>
       ) : (
-        <div className="flex items-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-slate-400">
-          <QrCode size={20} />
-          <span className="text-sm">Scan a cycle QR code or type it below.</span>
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-center">
+          <span className="grid h-11 w-11 place-items-center rounded-full bg-white text-slate-500 shadow-sm ring-1 ring-slate-200">
+            <QrCode size={22} />
+          </span>
+          <p className="text-sm text-slate-600">Scan the QR label on the cycle, or type its code below.</p>
+          {canUseCamera ? (
+            <Button type="button" size="sm" onClick={startCamera} disabled={disabled}>
+              <Camera size={16} /> Scan with camera
+            </Button>
+          ) : (
+            <p className="text-xs text-slate-400">
+              Camera scanning needs HTTPS (or localhost). Manual entry works everywhere.
+            </p>
+          )}
         </div>
       )}
 
-      <Field label="Cycle QR code" htmlFor="qr" hint="Printed on the bicycle, e.g. QR-CYCLE-001">
-        <div className="flex items-center gap-2">
-          <span className="text-slate-400">
-            <Keyboard size={16} />
-          </span>
+      <Field label="Cycle QR code" htmlFor="qr" hint="Printed under the QR label, e.g. CC-QR-04-1">
+        <div className="relative">
+          <Keyboard
+            size={16}
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+          />
           <Input
             id="qr"
             value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder="QR-CYCLE-001"
+            onChange={(e) => onChange(e.target.value.toUpperCase())}
+            placeholder="CC-QR-04-1"
             autoComplete="off"
+            autoCapitalize="characters"
             spellCheck={false}
             disabled={disabled}
-            className={cn('font-mono uppercase tracking-wide')}
+            autoFocus={autoFocus}
+            className={cn('pl-9 font-mono tracking-wide')}
           />
         </div>
       </Field>
 
-      {supportsCamera && (
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          onClick={scanning ? stopCamera : startCamera}
-          disabled={disabled}
-        >
-          <Camera size={16} />
-          {scanning ? 'Stop camera' : 'Scan with camera'}
-        </Button>
-      )}
-      {camError && <p className="text-xs text-amber-600">{camError}</p>}
+      {camError && <p className="text-xs text-amber-700">{camError}</p>}
     </div>
   );
 }

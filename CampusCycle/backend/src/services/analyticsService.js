@@ -84,8 +84,19 @@ function minutes(seconds) {
 async function overview(query = {}) {
   const range = resolveRange(query);
 
-  const [lifetime, rangeTotals, overTime, byStation, statusDist, byHour, topBikes, maintenance, stations] =
-    await Promise.all([
+  const [
+    lifetime,
+    rangeTotals,
+    overTime,
+    byStation,
+    statusDist,
+    byHour,
+    topBikes,
+    maintenance,
+    stations,
+    byWeek,
+    maintenanceWeekly,
+  ] = await Promise.all([
       analyticsModel.lifetimeTotals(),
       analyticsModel.rangeTotals(range),
       analyticsModel.rentalsOverTime(range),
@@ -95,6 +106,8 @@ async function overview(query = {}) {
       analyticsModel.topBicycles({ ...range, limit: 5 }),
       analyticsModel.maintenanceBreakdown(range),
       stationModel.listWithCounts(),
+      analyticsModel.rentalsByWeek(range),
+      analyticsModel.maintenanceByWeek(range),
     ]);
 
   // Fleet utilisation: share of the fleet currently out on a ride.
@@ -129,9 +142,21 @@ async function overview(query = {}) {
       total_completed_minutes: minutes(rangeTotals.total_completed_seconds),
       rides_per_day:
         range.days > 0 ? Math.round((rangeTotals.rides_started / range.days) * 10) / 10 : 0,
+      // Share of rides started in the range that have been completed.
+      completion_rate_pct:
+        rangeTotals.rides_started > 0
+          ? Math.round((rangeTotals.rides_completed / rangeTotals.rides_started) * 1000) / 10
+          : null,
+      // Busiest hour of day, or null when there were no rides at all.
+      peak_hour: byHour.reduce(
+        (best, h) => (h.rides > 0 && (!best || h.rides > best.rides) ? { hour: h.hour, rides: h.rides } : best),
+        null
+      ),
     },
     charts: {
       rentalsOverTime: overTime,
+      rentalsByWeek: byWeek,
+      maintenanceByWeek: maintenanceWeekly,
       rentalsByStation: byStation,
       bicycleStatus: statusDist,
       usageByHour: byHour,

@@ -9,6 +9,8 @@ import {
   Timer,
   Users,
   RefreshCw,
+  Percent,
+  Clock,
 } from 'lucide-react';
 import PageHeader from '../../components/ui/PageHeader';
 import Card from '../../components/ui/Card';
@@ -22,6 +24,7 @@ import RentalsByStationChart from '../../components/charts/RentalsByStationChart
 import BicycleStatusChart from '../../components/charts/BicycleStatusChart';
 import UsageByHourChart from '../../components/charts/UsageByHourChart';
 import MaintenanceSeverityChart from '../../components/charts/MaintenanceSeverityChart';
+import WeeklyBarsChart from '../../components/charts/WeeklyBarsChart';
 import { analyticsApi } from '../../services';
 import { formatMinutes, formatSeconds, todayInputValue } from '../../utils/format';
 
@@ -245,6 +248,37 @@ export default function AdminAnalytics() {
                   tone="blue"
                 />
               </div>
+              <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
+                <StatCard
+                  label="Completion rate"
+                  value={period.completion_rate_pct === null ? '—' : `${period.completion_rate_pct}%`}
+                  icon={Percent}
+                  tone="emerald"
+                  hint="Completed ÷ started in this period"
+                />
+                <StatCard
+                  label="Peak hour"
+                  value={
+                    period.peak_hour
+                      ? `${String(period.peak_hour.hour).padStart(2, '0')}:00`
+                      : '—'
+                  }
+                  icon={Clock}
+                  tone="violet"
+                  hint={
+                    period.peak_hour
+                      ? `${period.peak_hour.rides} ride(s) started in that hour`
+                      : 'No rides in this period'
+                  }
+                />
+                <StatCard
+                  label="Riding time"
+                  value={formatMinutes(period.total_completed_minutes)}
+                  icon={Timer}
+                  tone="slate"
+                  hint="Sum of completed rides"
+                />
+              </div>
             </section>
 
             {/* --- charts -------------------------------------------------- */}
@@ -252,6 +286,33 @@ export default function AdminAnalytics() {
               <h2 className="text-sm font-semibold text-slate-900">Trends</h2>
 
               <RentalsOverTimeChart data={data.charts.rentalsOverTime} loading={loading} />
+
+              <div className="grid items-start gap-4 lg:grid-cols-2">
+                <WeeklyBarsChart
+                  id="rides"
+                  title="Weekly rides"
+                  note="Rides by the week (Mon–Sun) they started, within the selected range."
+                  data={data.charts.rentalsByWeek}
+                  series={[
+                    { key: 'rides', name: 'Started' },
+                    { key: 'completed', name: 'Completed' },
+                  ]}
+                  loading={loading}
+                  emptyMessage="No rides in this period."
+                />
+                <WeeklyBarsChart
+                  id="maint"
+                  title="Maintenance trend"
+                  note="Reports filed vs. reports resolved per week, within the selected range."
+                  data={data.charts.maintenanceByWeek}
+                  series={[
+                    { key: 'reported', name: 'Reported' },
+                    { key: 'resolved', name: 'Resolved' },
+                  ]}
+                  loading={loading}
+                  emptyMessage="No maintenance activity in this period."
+                />
+              </div>
 
               <div className="grid items-start gap-4 lg:grid-cols-2">
                 <RentalsByStationChart data={data.charts.rentalsByStation} loading={loading} />

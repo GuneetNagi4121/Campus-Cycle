@@ -11,9 +11,21 @@ const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 
+app.disable('x-powered-by');
 app.use(helmet());
-app.use(cors({ origin: env.clientOrigin, credentials: true }));
-app.use(express.json());
+app.use(
+  cors({
+    // Only the configured frontend origin(s) may call the API from a browser.
+    // Requests without an Origin header (curl, server-to-server) are allowed;
+    // they are still subject to JWT authentication.
+    origin(origin, callback) {
+      if (!origin || env.clientOrigins.includes(origin)) return callback(null, true);
+      return callback(null, false);
+    },
+    credentials: true,
+  })
+);
+app.use(express.json({ limit: '100kb' }));
 
 if (env.nodeEnv !== 'test') {
   app.use(morgan('dev'));

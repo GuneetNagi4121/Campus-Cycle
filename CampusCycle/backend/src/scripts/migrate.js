@@ -16,6 +16,7 @@ const fs = require('fs');
 const path = require('path');
 const env = require('../config/env');
 const { createPool } = require('../config/db');
+const { assertSafeToReset } = require('./guard');
 
 // Schema changes and seeding use the direct (non-pooled) connection.
 const pool = createPool(env.databaseUrlUnpooled);
@@ -40,6 +41,7 @@ async function applyFile(file) {
 }
 
 async function run() {
+  await assertSafeToReset(pool, 'db:migrate');
   await applyFile(SCHEMA_PATH);
   for (const file of migrationFiles()) {
     await applyFile(file);

@@ -16,6 +16,9 @@ const BICYCLE_STATUS = Object.freeze({
   RESERVED: 'RESERVED',
   IN_USE: 'IN_USE',
   MAINTENANCE: 'MAINTENANCE',
+  // Permanently withdrawn from the fleet. Kept (not deleted) so its ride and
+  // maintenance history stay intact; never parked at a station.
+  RETIRED: 'RETIRED',
 });
 
 const RENTAL_STATUS = Object.freeze({
@@ -38,6 +41,8 @@ const MAINTENANCE_CATEGORY = Object.freeze({
   CHAIN: 'CHAIN',
   LIGHT: 'LIGHT',
   SEAT: 'SEAT',
+  FRAME: 'FRAME', // damaged bicycle: bent frame, broken handlebar, etc.
+  QR_CODE: 'QR_CODE', // missing, damaged or unscannable QR label
   OTHER: 'OTHER',
 });
 
@@ -111,6 +116,8 @@ const ACCEPTED_LOCATION_SOURCES = Object.freeze([LOCATION_SOURCE.SIMULATED]);
  *
  *   INACTIVE — the station itself is not in service
  *   NONE     — no bicycles available
+ *   FULL     — every dock is occupied, so nothing can be returned here
+ *              (bicycles are still available to pick up)
  *   LOW      — at most LOW_AVAILABILITY_COUNT bicycles left, or fewer than
  *              LOW_AVAILABILITY_PERCENT of the station's capacity
  *   GOOD     — anything above that
@@ -122,6 +129,7 @@ const AVAILABILITY_LEVEL = Object.freeze({
   GOOD: 'GOOD',
   LOW: 'LOW',
   NONE: 'NONE',
+  FULL: 'FULL',
   INACTIVE: 'INACTIVE',
 });
 

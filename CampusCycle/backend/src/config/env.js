@@ -1,14 +1,34 @@
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
 
-// `neon deploy` / `neon env pull` write the Neon connection strings to
-// CampusCycle/.env.local. Load it first so it takes precedence over
-// backend/.env; real environment variables (e.g. on Render) still win, as
-// dotenv never overrides a variable that is already set.
-dotenv.config({ path: path.resolve(__dirname, '..', '..', '..', '.env.local') });
-dotenv.config();
+const BACKEND_ENV = path.resolve(__dirname, '..', '..', '.env');
+const NEON_ENV_LOCAL = path.resolve(__dirname, '..', '..', '..', '.env.local');
+
+// DB_SOURCE chooses which database configuration wins:
+//   auto  (default) — `neon deploy` / `neon env pull` write the Neon connection
+//                     strings to CampusCycle/.env.local; it is loaded first so
+//                     it takes precedence over backend/.env.
+//   local           — ignore CampusCycle/.env.local and use backend/.env only
+//                     (the local PostgreSQL on port 5432 during development).
+// It may be set in the real environment or in backend/.env. Real environment
+// variables (e.g. on Render) always win, as dotenv never overrides them.
+function readDbSource() {
+  if (process.env.DB_SOURCE) return process.env.DB_SOURCE;
+  try {
+    return dotenv.parse(fs.readFileSync(BACKEND_ENV)).DB_SOURCE || 'auto';
+  } catch {
+    return 'auto';
+  }
+}
+
+const dbSource = readDbSource().trim().toLowerCase();
+if (dbSource !== 'local') {
+  dotenv.config({ path: NEON_ENV_LOCAL });
+}
+dotenv.config({ path: BACKEND_ENV });
 
 /**
  * Centralised, validated environment configuration.
@@ -39,8 +59,13 @@ function resolveTimezone(name) {
 
 const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
+  dbSource,
   port: parseInt(process.env.PORT || '4000', 10),
-  clientOrigin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
+  // Comma-separated list of allowed browser origins.
+  clientOrigins: (process.env.CLIENT_ORIGIN || 'http://localhost:5175')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean),
 
   // Prefer a single DATABASE_URL; otherwise assemble from parts.
   databaseUrl: process.env.DATABASE_URL || null,
@@ -62,5 +87,12 @@ const env = {
   // Reporting timezone for analytics day/hour buckets (IANA name).
   appTimezone: resolveTimezone(process.env.APP_TIMEZONE),
 };
+
+// A short or placeholder signing secret makes every JWT forgeable.
+if (env.jwtSecret.length < 32 || /change_me/i.test(env.jwtSecret)) {
+  const msg = 'JWT_SECRET is weak — use at least 32 random characters (e.g. `openssl rand -hex 32`).';
+  if (env.nodeEnv === 'production') throw new Error(msg);
+  if (env.nodeEnv !== 'test') console.warn(`⚠ ${msg}`);
+}
 
 module.exports = env;

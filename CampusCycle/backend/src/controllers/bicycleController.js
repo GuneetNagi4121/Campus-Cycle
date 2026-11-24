@@ -4,12 +4,23 @@ const asyncHandler = require('../utils/asyncHandler');
 const bicycleService = require('../services/bicycleService');
 const { toPositiveInt } = require('../utils/validators');
 const ApiError = require('../utils/ApiError');
-const { BICYCLE_STATUS_VALUES } = require('../utils/constants');
+const { BICYCLE_STATUS_VALUES, ROLES } = require('../utils/constants');
 
 function idParam(req) {
   const id = toPositiveInt(req.params.id);
   if (!id) throw ApiError.badRequest('Invalid bicycle id');
   return id;
+}
+
+/**
+ * The QR value is what unlocks a cycle, so students never receive it from the
+ * API — they must scan (or type) the label on the physical bicycle. Admins see
+ * it so they can print labels.
+ */
+function forViewer(req, bike) {
+  if (!bike || req.user.role === ROLES.ADMIN) return bike;
+  const { qr_code: _hidden, ...rest } = bike;
+  return rest;
 }
 
 const list = asyncHandler(async (req, res) => {
@@ -20,9 +31,21 @@ const list = asyncHandler(async (req, res) => {
   const bicycles = await bicycleService.list({
     status,
     stationId: stationId ? toPositiveInt(stationId) : undefined,
-    search: search ? String(search) : undefined,
+    search: search ? String(search).slice(0, 80) : undefined,
   });
-  res.json({ bicycles });
+  res.json({ bicycles: bicycles.map((b) => forViewer(req, b)) });
+});
+
+/**
+ * GET /api/bicycles/lookup?code= — find one bicycle by its QR value or its
+ * printed cycle code (used when reporting a problem with a scanned cycle).
+ */
+const lookup = asyncHandler(async (req, res) => {
+  const code = typeof req.query.code === 'string' ? req.query.code.trim() : '';
+  if (!code) throw ApiError.unprocessable('Enter a cycle or QR code', { code: 'Required' });
+  const bike = await bicycleService.findByCode(code.slice(0, 80));
+  if (!bike) throw ApiError.notFound('No bicycle matches that code');
+  res.json({ bicycle: forViewer(req, bike) });
 });
 
 const stats = asyncHandler(async (req, res) => {
@@ -30,7 +53,7 @@ const stats = asyncHandler(async (req, res) => {
 });
 
 const getOne = asyncHandler(async (req, res) => {
-  res.json({ bicycle: await bicycleService.getById(idParam(req)) });
+  res.json({ bicycle: forViewer(req, await bicycleService.getById(idParam(req))) });
 });
 
 const create = asyncHandler(async (req, res) => {
@@ -52,4 +75,4 @@ const remove = asyncHandler(async (req, res) => {
   res.json(await bicycleService.remove(idParam(req)));
 });
 
-module.exports = { list, stats, getOne, create, update, changeStatus, remove };
+module.exports = { list, lookup, stats, getOne, create, update, changeStatus, remove };

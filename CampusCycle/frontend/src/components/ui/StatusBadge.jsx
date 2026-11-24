@@ -8,6 +8,7 @@ const MAPS = {
     IN_USE: { tone: 'blue', label: 'In use' },
     RESERVED: { tone: 'violet', label: 'Reserved' },
     MAINTENANCE: { tone: 'amber', label: 'Maintenance' },
+    RETIRED: { tone: 'slate', label: 'Retired' },
   },
   rental: {
     ACTIVE: { tone: 'emerald', label: 'Active' },
@@ -22,8 +23,9 @@ const MAPS = {
   availability: {
     GOOD: { tone: 'emerald', label: 'Available' },
     LOW: { tone: 'amber', label: 'Low availability' },
-    NONE: { tone: 'rose', label: 'None available' },
-    INACTIVE: { tone: 'slate', label: 'Station inactive' },
+    NONE: { tone: 'rose', label: 'No cycles' },
+    FULL: { tone: 'violet', label: 'Full — no free docks' },
+    INACTIVE: { tone: 'slate', label: 'Temporarily unavailable' },
   },
   maintenance: {
     OPEN: { tone: 'rose', label: 'Open' },

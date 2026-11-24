@@ -8,8 +8,8 @@ import Spinner from '../../components/ui/Spinner';
 import EmptyState from '../../components/ui/EmptyState';
 import StatusBadge from '../../components/ui/StatusBadge';
 import RentDialog from '../../components/RentDialog';
-import { formatCoords } from '../../utils/format';
-import { bicyclesApi, stationsApi, rentalsApi } from '../../services';
+import CampusMap from '../../components/map/CampusMap';
+import { bicyclesApi, stationsApi, rentalsApi, mapApi } from '../../services';
 import { useToast } from '../../context/ToastContext';
 
 export default function StationDetail() {
@@ -21,16 +21,19 @@ export default function StationDetail() {
   const [loading, setLoading] = useState(true);
   const [hasActive, setHasActive] = useState(false);
   const [selectedBike, setSelectedBike] = useState(null);
+  const [mapConfig, setMapConfig] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [st, bikeList, active] = await Promise.all([
+      const [st, bikeList, active, mapCfg] = await Promise.all([
         stationsApi.get(id),
         bicyclesApi.list({ station_id: id }),
         rentalsApi.active().catch(() => null),
+        mapApi.config().catch(() => null),
       ]);
       setStation(st);
+      setMapConfig(mapCfg);
       setBikes(bikeList);
       setHasActive(!!active);
     } catch (err) {
@@ -85,8 +88,12 @@ export default function StationDetail() {
           <div className="flex items-center gap-2">
             <StatusBadge kind="station" status={station.status} />
             {station.has_coordinates && (
-              <Button variant="secondary" size="sm" onClick={() => navigate('/app/map')}>
-                <MapIcon size={15} /> On the map
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => navigate(`/app/map?station=${station.id}`)}
+              >
+                <MapIcon size={15} /> Open in map
               </Button>
             )}
           </div>
@@ -118,9 +125,19 @@ export default function StationDetail() {
       </div>
 
       {station.has_coordinates && (
-        <p className="mb-6 font-mono text-xs text-slate-400">
-          {formatCoords(station.latitude, station.longitude)}
-        </p>
+        <div className="mb-6">
+          <CampusMap
+            map={mapConfig}
+            stations={[station]}
+            selectedId={station.id}
+            heightClass="h-[260px] sm:h-[320px]"
+            ariaLabel={`Campus map showing ${station.name}`}
+          />
+          <p className="mt-2 text-xs text-slate-400">
+            {station.code ? `${station.code} · ` : ''}
+            {station.free_docks} free dock(s) for returns
+          </p>
+        </div>
       )}
 
       <h3 className="mb-3 font-semibold text-slate-900">Available cycles</h3>
@@ -147,7 +164,7 @@ export default function StationDetail() {
                 </span>
                 <div>
                   <p className="font-medium text-slate-900">{bike.cycle_code}</p>
-                  <p className="font-mono text-xs text-slate-400">{bike.qr_code}</p>
+                  <p className="text-xs text-slate-400">{bike.model || 'Scan its QR to unlock'}</p>
                 </div>
               </div>
               <Button

@@ -32,9 +32,10 @@ async function lifetimeTotals(db = pool) {
       (SELECT COUNT(*)::int FROM bicycles WHERE status = 'IN_USE')             AS in_use_bicycles,
       (SELECT COUNT(*)::int FROM bicycles WHERE status = 'MAINTENANCE')        AS maintenance_bicycles,
       (SELECT COUNT(*)::int FROM bicycles WHERE status = 'RESERVED')           AS reserved_bicycles,
+      (SELECT COUNT(*)::int FROM bicycles WHERE status = 'RETIRED')            AS retired_bicycles,
       (SELECT COUNT(*)::int FROM stations)                                     AS total_stations,
       (SELECT COUNT(*)::int FROM stations WHERE status = 'ACTIVE')             AS active_stations,
-      (SELECT COUNT(*)::int FROM stations WHERE latitude IS NOT NULL)          AS mapped_stations,
+      (SELECT COUNT(*)::int FROM stations WHERE map_x IS NOT NULL)             AS mapped_stations,
       (SELECT COUNT(*)::int FROM users WHERE role = 'STUDENT')                 AS total_students,
       (SELECT COUNT(*)::int FROM rentals WHERE status = 'ACTIVE')              AS active_rentals,
       (SELECT COUNT(*)::int FROM rentals WHERE status = 'COMPLETED')           AS completed_rentals,
@@ -143,7 +144,7 @@ async function rentalsByStation({ from, to }, db = pool) {
 async function bicycleStatusDistribution(db = pool) {
   const { rows } = await db.query(`
     SELECT v.status, COALESCE(COUNT(b.id), 0)::int AS count
-    FROM (VALUES ('AVAILABLE'), ('IN_USE'), ('RESERVED'), ('MAINTENANCE')) AS v(status)
+    FROM (VALUES ('AVAILABLE'), ('IN_USE'), ('RESERVED'), ('MAINTENANCE'), ('RETIRED')) AS v(status)
     LEFT JOIN bicycles b ON b.status = v.status
     GROUP BY v.status
     ORDER BY v.status
@@ -224,7 +225,68 @@ async function maintenanceBreakdown({ from, to }, db = pool) {
   };
 }
 
+/**
+ * Rides per ISO week (weeks start on Monday) across the range, empty weeks
+ * included, with the completed share.
+ */
+async function rentalsByWeek({ from, to }, db = pool) {
+  const { rows } = await db.query(
+    `
+    WITH weeks AS (
+      SELECT generate_series(
+               date_trunc('week', $1::timestamptz AT TIME ZONE $3),
+               date_trunc('week', ($2::timestamptz - INTERVAL '1 microsecond') AT TIME ZONE $3),
+               INTERVAL '1 week'
+             ) AS week
+    )
+    SELECT to_char(w.week, 'YYYY-MM-DD') AS week_start,
+           COUNT(r.id)::int                                        AS rides,
+           COUNT(r.id) FILTER (WHERE r.status = 'COMPLETED')::int  AS completed
+    FROM weeks w
+    LEFT JOIN rentals r
+      ON (r.started_at AT TIME ZONE $3) >= w.week
+     AND (r.started_at AT TIME ZONE $3) <  w.week + INTERVAL '1 week'
+     AND r.started_at >= $1 AND r.started_at < $2
+    GROUP BY w.week
+    ORDER BY w.week
+  `,
+    [from, to, TZ]
+  );
+  return rows;
+}
+
+/** Maintenance reports opened and resolved per ISO week within the range. */
+async function maintenanceByWeek({ from, to }, db = pool) {
+  const { rows } = await db.query(
+    `
+    WITH weeks AS (
+      SELECT generate_series(
+               date_trunc('week', $1::timestamptz AT TIME ZONE $3),
+               date_trunc('week', ($2::timestamptz - INTERVAL '1 microsecond') AT TIME ZONE $3),
+               INTERVAL '1 week'
+             ) AS week
+    )
+    SELECT to_char(w.week, 'YYYY-MM-DD') AS week_start,
+           (SELECT COUNT(*)::int FROM maintenance_reports m
+             WHERE (m.reported_at AT TIME ZONE $3) >= w.week
+               AND (m.reported_at AT TIME ZONE $3) <  w.week + INTERVAL '1 week'
+               AND m.reported_at >= $1 AND m.reported_at < $2) AS reported,
+           (SELECT COUNT(*)::int FROM maintenance_reports m
+             WHERE m.resolved_at IS NOT NULL
+               AND (m.resolved_at AT TIME ZONE $3) >= w.week
+               AND (m.resolved_at AT TIME ZONE $3) <  w.week + INTERVAL '1 week'
+               AND m.resolved_at >= $1 AND m.resolved_at < $2) AS resolved
+    FROM weeks w
+    ORDER BY w.week
+  `,
+    [from, to, TZ]
+  );
+  return rows;
+}
+
 module.exports = {
+  rentalsByWeek,
+  maintenanceByWeek,
   lifetimeTotals,
   rangeTotals,
   rentalsOverTime,

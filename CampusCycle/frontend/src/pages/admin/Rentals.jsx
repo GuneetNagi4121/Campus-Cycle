@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Route as RouteIcon, ChevronRight } from 'lucide-react';
+import { Route as RouteIcon, ChevronRight, Search } from 'lucide-react';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import DataState from '../../components/ui/DataState';
@@ -36,8 +36,19 @@ export default function AdminRentals() {
     station_id: '',
     from: '',
     to: '',
+    search: '',
   });
   const [offset, setOffset] = useState(0);
+  const [searchInput, setSearchInput] = useState('');
+
+  // Debounce the free-text search so typing does not fire a request per key.
+  useEffect(() => {
+    const id = setTimeout(() => {
+      setFilters((f) => (f.search === searchInput.trim() ? f : { ...f, search: searchInput.trim() }));
+      setOffset(0);
+    }, 300);
+    return () => clearTimeout(id);
+  }, [searchInput]);
 
   // Filter option lists.
   useEffect(() => {
@@ -88,6 +99,20 @@ export default function AdminRentals() {
   return (
     <div>
       <PageHeader title="Rentals" subtitle="Every ride across the campus network." />
+
+      <div className="relative mb-3 max-w-md">
+        <Search
+          size={16}
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+        />
+        <Input
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          placeholder="Search student name, email or cycle code"
+          className="pl-9"
+          aria-label="Search rides"
+        />
+      </div>
 
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <div>
@@ -161,7 +186,8 @@ export default function AdminRentals() {
             variant="ghost"
             size="sm"
             onClick={() => {
-              setFilters({ status: '', bicycle_id: '', station_id: '', from: '', to: '' });
+              setFilters({ status: '', bicycle_id: '', station_id: '', from: '', to: '', search: '' });
+              setSearchInput('');
               setOffset(0);
             }}
           >

@@ -23,7 +23,8 @@
  * Usage:  npm run test:e2e:phase2   (from backend/, with a reachable database)
  */
 
-process.env.NODE_ENV = 'test';
+// Must be first: selects the *_test database and refuses any other.
+const { assertTestDatabase } = require('./testDb');
 
 const fs = require('fs');
 const path = require('path');
@@ -65,6 +66,15 @@ async function api(method, endpoint, { token, body } = {}) {
   return { status: res.status, data };
 }
 
+/**
+ * Students are never sent QR values by the API; in real use they read the
+ * code off the label on the bicycle. Tests "read the label" from the database.
+ */
+async function qrLabel(bike) {
+  const { rows } = await pool.query('SELECT qr_code FROM bicycles WHERE id = $1', [bike.id]);
+  return rows[0].qr_code;
+}
+
 async function login(email, password) {
   const { data } = await api('POST', '/api/auth/login', { body: { email, password } });
   return data && data.token;
@@ -78,6 +88,14 @@ async function resetDatabase() {
   }
   await pool.query(read(path.join(DB_DIR, 'seed.sql')));
   await pool.query(read(path.join(DB_DIR, 'seed-phase2.sql')));
+  // Test fixture: place the six Phase 1 stations on the campus map image
+  // (percent of width/height — the same positions seed-campus.sql uses).
+  await pool.query(`
+    UPDATE stations s SET map_x = v.x, map_y = v.y
+    FROM (VALUES ('Library', 69.531, 57.361), ('Hostel A', 39.688, 82.639),
+                 ('Hostel B', 28.906, 90.000), ('Academic Block', 78.906, 57.361),
+                 ('Cafeteria', 68.047, 74.306), ('Sports Complex', 43.750, 35.417)) AS v(name, x, y)
+    WHERE s.name = v.name`);
 }
 
 // Points used by the geofencing scenario. "Inside" is the campus centre from
@@ -88,6 +106,7 @@ const OUTSIDE_2 = { latitude: 30.4100, longitude: 76.4300 };
 
 async function main() {
   console.log('Resetting database (schema + migrations + seeds)...');
+  await assertTestDatabase(pool);
   await resetDatabase();
 
   const server = app.listen(0);
@@ -116,6 +135,16 @@ async function main() {
         (s) => s.latitude >= -90 && s.latitude <= 90 && s.longitude >= -180 && s.longitude <= 180
       ),
       'all coordinates are within valid latitude/longitude ranges'
+    );
+    check(
+      stations.every(
+        (s) => s.map_x >= 0 && s.map_x <= 100 && s.map_y >= 0 && s.map_y <= 100 && s.has_coordinates
+      ),
+      'every station has a campus-map position as a 0–100 percentage'
+    );
+    check(
+      stations.every((s) => s.free_docks === s.capacity - s.bikes_at_station),
+      'free_docks = capacity - bicycles parked'
     );
     check(
       stations.every((s) => typeof s.availability_pct === 'number' && s.availability_level),
@@ -195,6 +224,31 @@ async function main() {
       body: { latitude: 30.3568, longitude: 76.3628 },
     });
     check(goodCoord.status === 200, 'valid coordinates are accepted');
+
+    // Map-position validation on write (percent of the map image).
+    check(
+      (await api('PUT', `/api/stations/${lib.id}`, { token: admin, body: { map_x: 101, map_y: 50 } }))
+        .status === 422,
+      'map_x above 100% is rejected (422)'
+    );
+    check(
+      (await api('PUT', `/api/stations/${lib.id}`, { token: admin, body: { map_x: 40, map_y: '' } }))
+        .status === 422,
+      'map_x without map_y is rejected (422)'
+    );
+    const moved = await api('PUT', `/api/stations/${lib.id}`, {
+      token: admin,
+      body: { map_x: 70.1, map_y: 57.4 },
+    });
+    check(
+      moved.status === 200 && moved.data.station.map_x === 70.1 && moved.data.station.map_y === 57.4,
+      'an admin can move a station on the map'
+    );
+    check(
+      (await api('PUT', `/api/stations/${lib.id}`, { token: aditi, body: { map_x: 10, map_y: 10 } }))
+        .status === 403,
+      'a student cannot move a station (403)'
+    );
 
     // ---- Scenario G: availability filters ----------------------------------
     console.log('\nScenario G — station availability filters and sorting');
@@ -338,7 +392,7 @@ async function main() {
 
     const rentUnsafe = await api('POST', '/api/rentals', {
       token: guneet,
-      body: { qr_code: unsafeBike.qr_code },
+      body: { qr_code: await qrLabel(unsafeBike) },
     });
     check(rentUnsafe.status === 409, 'renting the unsafe bicycle -> 409');
 
@@ -399,7 +453,7 @@ async function main() {
     check(toProgress.status === 200, 'an admin can move a report to IN_PROGRESS');
     check(toProgress.data.safety_hold === true, 'the safety hold survives IN_PROGRESS');
     check(
-      (await api('POST', '/api/rentals', { token: guneet, body: { qr_code: unsafeBike.qr_code } }))
+      (await api('POST', '/api/rentals', { token: guneet, body: { qr_code: await qrLabel(unsafeBike) } }))
         .status === 409,
       'the bicycle still cannot be rented while IN_PROGRESS'
     );
@@ -440,7 +494,7 @@ async function main() {
     );
     const rentAgain = await api('POST', '/api/rentals', {
       token: guneet,
-      body: { qr_code: unsafeBike.qr_code },
+      body: { qr_code: await qrLabel(unsafeBike) },
     });
     check(rentAgain.status === 409, 'Guneet still has an active ride, so this is still refused');
 
@@ -525,7 +579,7 @@ async function main() {
       'usage-by-hour covers all 24 hours, including empty ones'
     );
     check(
-      analytics.charts.bicycleStatus.length === 4,
+      analytics.charts.bicycleStatus.length === 5, // AVAILABLE, IN_USE, RESERVED, MAINTENANCE, RETIRED
       'the status distribution includes every status, even zero ones'
     );
     check(

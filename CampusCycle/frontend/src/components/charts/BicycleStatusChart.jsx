@@ -24,7 +24,10 @@ const LABELS = {
  * only thing carrying meaning.
  */
 export default function BicycleStatusChart({ data = [], loading }) {
-  const rows = data.map((d) => ({
+  // Retired cycles have left the working fleet; they are counted in the note
+  // rather than given a bar (and a colour) of their own.
+  const retired = data.find((d) => d.status === 'RETIRED')?.count || 0;
+  const rows = data.filter((d) => d.status !== 'RETIRED').map((d) => ({
     status: d.status,
     label: LABELS[d.status] || d.status,
     count: d.count,
@@ -34,7 +37,9 @@ export default function BicycleStatusChart({ data = [], loading }) {
   return (
     <ChartCard
       title="Fleet by status"
-      note="Current snapshot of every bicycle — not affected by the date range."
+      note={`Current snapshot of the working fleet — not affected by the date range.${
+        retired ? ` ${retired} retired cycle(s) not shown.` : ''
+      }`}
       loading={loading}
       isEmpty={!loading && !hasData}
       emptyMessage="No bicycles have been added yet."

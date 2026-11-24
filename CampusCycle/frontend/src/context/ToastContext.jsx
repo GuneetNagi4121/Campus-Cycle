@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useCallback, useRef } from 'react';
-import { CheckCircle2, AlertCircle, X } from 'lucide-react';
+import { createContext, useContext, useState, useCallback, useMemo, useRef } from 'react';
+import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
 import { cn } from '../utils/format';
 
 const ToastContext = createContext(null);
@@ -29,10 +29,15 @@ export function ToastProvider({ children }) {
     [dismiss]
   );
 
-  const toast = {
-    success: (message) => push('success', message),
-    error: (message) => push('error', message),
-  };
+  // Stable identity, so pages can list `toast` as a hook dependency safely.
+  const toast = useMemo(
+    () => ({
+      success: (message) => push('success', message),
+      error: (message) => push('error', message),
+      info: (message) => push('info', message),
+    }),
+    [push]
+  );
 
   return (
     <ToastContext.Provider value={toast}>
@@ -43,12 +48,18 @@ export function ToastProvider({ children }) {
             key={t.id}
             className={cn(
               'pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border bg-white p-3.5 shadow-lg ring-1 ring-black/5',
-              t.type === 'success' ? 'border-emerald-100' : 'border-rose-100'
+              t.type === 'success'
+                ? 'border-emerald-100'
+                : t.type === 'info'
+                  ? 'border-blue-100'
+                  : 'border-rose-100'
             )}
-            role="status"
+            role={t.type === 'error' ? 'alert' : 'status'}
           >
             {t.type === 'success' ? (
               <CheckCircle2 className="mt-0.5 shrink-0 text-emerald-600" size={18} />
+            ) : t.type === 'info' ? (
+              <Info className="mt-0.5 shrink-0 text-blue-600" size={18} />
             ) : (
               <AlertCircle className="mt-0.5 shrink-0 text-rose-600" size={18} />
             )}

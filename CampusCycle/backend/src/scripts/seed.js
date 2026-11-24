@@ -8,6 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const env = require('../config/env');
 const { createPool } = require('../config/db');
+const { assertSafeToReset } = require('./guard');
 
 // Schema changes and seeding use the direct (non-pooled) connection.
 const pool = createPool(env.databaseUrlUnpooled);
@@ -15,6 +16,7 @@ const pool = createPool(env.databaseUrlUnpooled);
 const SEED_PATH = path.join(__dirname, '..', '..', '..', 'database', 'seed.sql');
 
 async function run() {
+  await assertSafeToReset(pool, 'db:seed');
   const sql = fs.readFileSync(SEED_PATH, 'utf8');
   await pool.query(sql);
   console.log('✔ Seed data loaded from', path.relative(process.cwd(), SEED_PATH));

@@ -40,6 +40,32 @@ function errorHandler(err, req, res, next) {
     });
   }
 
+  // The station-capacity trigger -> 409 Conflict with a readable message.
+  if (err && err.code === '23514' && err.constraint === 'chk_station_capacity') {
+    return res.status(409).json({
+      error: 'That station is full. Choose another station.',
+      details: { station: 'Station at capacity' },
+    });
+  }
+
+  // PostgreSQL check-constraint violation -> 422 (the data broke a rule).
+  if (err && err.code === '23514') {
+    return res.status(422).json({
+      error: 'The submitted values are not allowed',
+      ...(err.constraint ? { details: { constraint: err.constraint } } : {}),
+    });
+  }
+
+  // PostgreSQL invalid input syntax (e.g. a malformed date filter) -> 400.
+  if (err && (err.code === '22P02' || err.code === '22007' || err.code === '22008')) {
+    return res.status(400).json({ error: 'A request parameter has an invalid format' });
+  }
+
+  // Oversized body.
+  if (err && err.type === 'entity.too.large') {
+    return res.status(413).json({ error: 'Request body is too large' });
+  }
+
   // Malformed JSON body.
   if (err && err.type === 'entity.parse.failed') {
     return res.status(400).json({ error: 'Invalid JSON in request body' });

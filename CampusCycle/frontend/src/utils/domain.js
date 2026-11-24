@@ -10,6 +10,8 @@ export const MAINTENANCE_CATEGORIES = [
   { value: 'CHAIN', label: 'Broken or slipping chain' },
   { value: 'LIGHT', label: 'Faulty light' },
   { value: 'SEAT', label: 'Seat damage' },
+  { value: 'FRAME', label: 'Damaged bicycle (frame, handlebar, pedals)' },
+  { value: 'QR_CODE', label: 'QR code missing or will not scan' },
   { value: 'OTHER', label: 'Other mechanical issue' },
 ];
 
@@ -29,7 +31,8 @@ export const AVAILABILITY_LEVELS = [
   { value: 'GOOD', label: 'Good availability' },
   { value: 'LOW', label: 'Low availability' },
   { value: 'NONE', label: 'No cycles available' },
-  { value: 'INACTIVE', label: 'Inactive stations' },
+  { value: 'FULL', label: 'Full (no free docks)' },
+  { value: 'INACTIVE', label: 'Temporarily unavailable' },
 ];
 
 export function categoryLabel(value) {
@@ -52,5 +55,17 @@ export const AVAILABILITY_STYLE = {
   GOOD: { dot: '#059669', ring: 'ring-emerald-200', text: 'text-emerald-700', bar: 'bg-brand-500' },
   LOW: { dot: '#d97706', ring: 'ring-amber-200', text: 'text-amber-700', bar: 'bg-amber-500' },
   NONE: { dot: '#e11d48', ring: 'ring-rose-200', text: 'text-rose-700', bar: 'bg-rose-400' },
-  INACTIVE: { dot: '#94a3b8', ring: 'ring-slate-200', text: 'text-slate-500', bar: 'bg-slate-300' },
+  FULL: { dot: '#7c3aed', ring: 'ring-violet-200', text: 'text-violet-700', bar: 'bg-violet-500' },
+  INACTIVE: { dot: '#64748b', ring: 'ring-slate-200', text: 'text-slate-500', bar: 'bg-slate-300' },
 };
+
+/** Legend entries for the campus map, in display order. */
+export const MAP_LEGEND = [
+  { level: 'GOOD', label: 'Cycles available', hint: 'Plenty of cycles to pick up' },
+  { level: 'LOW', label: 'Few cycles left', hint: 'Partially occupied — 2 or fewer, or under 20%' },
+  { level: 'NONE', label: 'No cycles', hint: 'Nothing to pick up; you can still return here' },
+  { level: 'FULL', label: 'Station full', hint: 'Every dock taken — return elsewhere' },
+  { level: 'INACTIVE', label: 'Temporarily unavailable', hint: 'Station closed by an administrator' },
+];
+
+export const BICYCLE_STATUSES = ['AVAILABLE', 'RESERVED', 'IN_USE', 'MAINTENANCE', 'RETIRED'];
