@@ -15,7 +15,7 @@ Thapar Institute of Engineering and Technology, Patiala
 | `CampusCycle/` | The application: Express + PostgreSQL backend, React frontend, SQL schema, migrations, seeds and test suites. See its own `README.md`. |
 | `Project-Proposal/` | The project proposal, in the TIET report template. |
 | `Project-Prototype/` | The mid-semester report, in the TIET report template. |
-| `Project-Report/` | The final end-semester report, in the TIET report template. |
+| `Project-Report-Final/` | The final end-semester report, in the TIET report template. |
 | `diagrams/` | Sources for every data-flow diagram used in the three reports, plus the script that builds them. |
 | `assets-source/` | Original material the campus-map artwork was derived from. Not served by the application. |
 
@@ -29,7 +29,7 @@ can be uploaded to Overleaf on its own and compiled without anything else.
 |---|---|
 | Proposal | `Project-Proposal/CampusCycle-Proposal.pdf` |
 | Mid-semester report | `Project-Prototype/CampusCycle-Prototype-Report.pdf` |
-| Final report | `Project-Report/CampusCycle-Final-Report.pdf` |
+| Final report | `Project-Report-Final/CampusCycle-Final-Report.pdf` |
 
 ## Compiling a report
 
@@ -39,7 +39,7 @@ The template expects pdfLaTeX with Biber, which is Overleaf's default.
 **Locally**, with a TeX Live installation that includes `biblatex` and `biber`:
 
 ```bash
-cd Project-Report
+cd Project-Report-Final
 latexmk -pdf main.tex
 ```
 

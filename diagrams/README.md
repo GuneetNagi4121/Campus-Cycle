@@ -11,6 +11,12 @@ python3 build.py --png    # also writes png/ for quick inspection
 
 Graphviz (`dot`) must be on the PATH. Nothing else is required.
 
+`pdf/` is what the reports include; `png/` is committed too, so a diagram can
+be viewed, pasted into a slide or linked from a chat without a LaTeX build.
+Both are regenerated from `dot/`, which is the only source of truth — edit a
+`.dot` file, re-run the build, and copy the refreshed PDF into the `figures/`
+folder of whichever report uses it.
+
 ## Notation
 
 Gane–Sarson, used consistently across the whole set:
