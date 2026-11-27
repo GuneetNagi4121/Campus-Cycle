@@ -12,4 +12,4 @@
 *.run.xml
 *.synctex.gz
 *.toc
-verify.*
+main.pdf

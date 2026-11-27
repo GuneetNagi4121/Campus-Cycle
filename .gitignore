@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment variables (NEVER commit secrets)
+.env
+.env.local
+.env.*.local
+
+# Local-only notes (demo credentials etc.)
+*.local.md
+
+# Build output
+dist/
+build/
+
+# Editor / tooling
+.vscode/
+.idea/
+.claude/
+skills-lock.json
+
+# Archives and scratch
+*.tgz
+*.zip
+
+# OS
+.DS_Store
+Thumbs.db

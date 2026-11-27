@@ -1,0 +1,45 @@
+digraph dfd2maint {
+  rankdir=TB;
+  nodesep=0.45; ranksep=0.85;
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=10.5, color="#5B6B66"];
+  edge [fontname="Helvetica", fontsize=8.5, color="#8A9A95", fontcolor="#3C4A46", arrowsize=0.65];
+
+  student [shape=box, style="filled", fillcolor="#FFFFFF", color="#1F2A27", penwidth=1.5, label=<<B>Student</B>>];
+  admin [shape=box, style="filled", fillcolor="#FFFFFF", color="#1F2A27", penwidth=1.5, label=<<B>Administrator</B>>];
+  p51 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">5.1</FONT></TD></TR><TR><TD>Validate the report<BR/>cycle, category, text</TD></TR></TABLE>>];
+  p52 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">5.2</FONT></TD></TR><TR><TD>Record the report<BR/>status OPEN</TD></TR></TABLE>>];
+  p53 [shape=box, style="rounded,filled", fillcolor="#EAF3EF", color="#0B6B4F", penwidth=1.5, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#0B6B4F"><FONT FACE="Courier" POINT-SIZE="9">5.3</FONT></TD></TR><TR><TD>Classify severity<BR/>and decide the hold</TD></TR></TABLE>>];
+  p54 [shape=box, style="rounded,filled", fillcolor="#EAF3EF", color="#0B6B4F", penwidth=1.5, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#0B6B4F"><FONT FACE="Courier" POINT-SIZE="9">5.4</FONT></TD></TR><TR><TD>Take the cycle out<BR/>of service now</TD></TR></TABLE>>];
+  p55 [shape=box, style="rounded,filled", fillcolor="#EAF3EF", color="#0B6B4F", penwidth=1.5, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#0B6B4F"><FONT FACE="Courier" POINT-SIZE="9">5.5</FONT></TD></TR><TR><TD>Defer the hold to<BR/>the end of the ride</TD></TR></TABLE>>];
+  p56 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">5.6</FONT></TD></TR><TR><TD>Validate the<BR/>status transition</TD></TR></TABLE>>];
+  p57 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">5.7</FONT></TD></TR><TR><TD>Record resolution<BR/>and notes</TD></TR></TABLE>>];
+  p58 [shape=box, style="rounded,filled", fillcolor="#EAF3EF", color="#0B6B4F", penwidth=1.5, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#0B6B4F"><FONT FACE="Courier" POINT-SIZE="9">5.8</FONT></TD></TR><TR><TD>Return the cycle<BR/>to service</TD></TR></TABLE>>];
+  p30 [shape=box, style="rounded,filled,dashed", fillcolor="#FFFFFF", color="#9AA8A3", penwidth=1.0, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">3.0</FONT></TD></TR><TR><TD>Process rentals<BR/>(level 1)</TD></TR></TABLE>>];
+  d5 [shape=plaintext, label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D5</FONT></TD><TD><FONT FACE="Courier">maintenance_reports</FONT></TD></TR></TABLE>>];
+  d3 [shape=plaintext, label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D3</FONT></TD><TD><FONT FACE="Courier">bicycles</FONT></TD></TR></TABLE>>];
+  d4 [shape=plaintext, label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D4</FONT></TD><TD><FONT FACE="Courier">rentals</FONT></TD></TR></TABLE>>];
+  student -> p51 [label="category, description,\nseverity"];
+  admin -> p51 [label="report filed on\na student's behalf"];
+  p51 -> p52 [label="valid report"];
+  p51 -> student [label="400 with the\nfailing field"];
+  p52 -> d5 [label="insert OPEN"];
+  p52 -> student [label="acknowledgement"];
+  p52 -> p53 [label="severity"];
+  p53 -> d4 [label="is the cycle\nout on a ride?", dir=both];
+  p53 -> p54 [label="HIGH or CRITICAL,\ncycle is parked", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p53 -> p55 [label="HIGH or CRITICAL,\nride in progress", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p54 -> d3 [label="status MAINTENANCE", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p55 -> p30 [label="park as MAINTENANCE\non return", color="#0B6B4F", fontcolor="#0B6B4F", style=dashed];
+  admin -> p56 [label="new status, notes"];
+  p56 -> d5 [label="current status", dir=both];
+  p56 -> admin [label="409 on an invalid\ntransition"];
+  p56 -> p57 [label="OPEN -> IN_PROGRESS\n-> RESOLVED -> CLOSED"];
+  p57 -> d5 [label="resolved_at, notes"];
+  p57 -> admin [label="updated queue"];
+  admin -> p58 [label="explicit return-to-\nservice action"];
+  p58 -> d5 [label="any hold left?", dir=both];
+  p58 -> d3 [label="status AVAILABLE,\nonly if no hold remains", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p58 -> admin [label="409 while a hold\nremains", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p30 -> p53 [label="rental attempt\nblocked by a hold", color="#0B6B4F", fontcolor="#0B6B4F", style=dashed];
+}

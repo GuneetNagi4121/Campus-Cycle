@@ -1,0 +1,38 @@
+digraph dfd2analytics {
+  rankdir=TB;
+  nodesep=0.45; ranksep=0.85;
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=10.5, color="#5B6B66"];
+  edge [fontname="Helvetica", fontsize=8.5, color="#8A9A95", fontcolor="#3C4A46", arrowsize=0.65];
+
+  admin [shape=box, style="filled", fillcolor="#FFFFFF", color="#1F2A27", penwidth=1.5, label=<<B>Administrator</B>>];
+  p81 [shape=box, style="rounded,filled", fillcolor="#EAF3EF", color="#0B6B4F", penwidth=1.5, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#0B6B4F"><FONT FACE="Courier" POINT-SIZE="9">8.1</FONT></TD></TR><TR><TD>Validate the period<BR/>and reporting timezone</TD></TR></TABLE>>];
+  p82 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">8.2</FONT></TD></TR><TR><TD>Fleet snapshot<BR/>period-independent</TD></TR></TABLE>>];
+  p83 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">8.3</FONT></TD></TR><TR><TD>Period ride counts<BR/>and durations</TD></TR></TABLE>>];
+  p84 [shape=box, style="rounded,filled", fillcolor="#EAF3EF", color="#0B6B4F", penwidth=1.5, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#0B6B4F"><FONT FACE="Courier" POINT-SIZE="9">8.4</FONT></TD></TR><TR><TD>Build a continuous<BR/>date axis</TD></TR></TABLE>>];
+  p85 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">8.5</FONT></TD></TR><TR><TD>Demand by station<BR/>and by hour</TD></TR></TABLE>>];
+  p86 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">8.6</FONT></TD></TR><TR><TD>Maintenance load<BR/>by severity</TD></TR></TABLE>>];
+  p87 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">8.7</FONT></TD></TR><TR><TD>Assemble the<BR/>response</TD></TR></TABLE>>];
+  d3 [shape=plaintext, label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D3</FONT></TD><TD><FONT FACE="Courier">bicycles</FONT></TD></TR></TABLE>>];
+  d2 [shape=plaintext, label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D2</FONT></TD><TD><FONT FACE="Courier">stations</FONT></TD></TR></TABLE>>];
+  d4 [shape=plaintext, label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D4</FONT></TD><TD><FONT FACE="Courier">rentals</FONT></TD></TR></TABLE>>];
+  d5 [shape=plaintext, label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D5</FONT></TD><TD><FONT FACE="Courier">maintenance_reports</FONT></TD></TR></TABLE>>];
+  admin -> p81 [label="from, to"];
+  p81 -> admin [label="400 on an\ninverted range"];
+  p81 -> p82 [label="validated window", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p81 -> p83 [label="window in the campus\ntimezone, not the\ndatabase session's", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p82 -> d3 [label="COUNT &#8230; FILTER\nby status", dir=both];
+  p82 -> d2 [label="active stations,\ntotal capacity", dir=both];
+  p82 -> p87 [label="snapshot and\nall-time totals"];
+  p83 -> d4 [label="rides started inside\nthe window", dir=both];
+  p83 -> p84 [label="counts per day"];
+  p84 -> p87 [label="zeros on quiet days,\nnot gaps", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p85 -> d4 [label="GROUP BY station,\nhour of day", dir=both];
+  p85 -> d2 [label="station names", dir=both];
+  p81 -> p85 [label="window"];
+  p85 -> p87 [label="ranked stations,\nhourly profile"];
+  p81 -> p86 [label="window"];
+  p86 -> d5 [label="open and resolved\nby severity", dir=both];
+  p86 -> p87 [label="maintenance figures"];
+  p87 -> admin [label="one payload; an average\nover no rides is absent,\nnot zero", color="#0B6B4F", fontcolor="#0B6B4F"];
+}

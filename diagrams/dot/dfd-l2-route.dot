@@ -1,0 +1,36 @@
+digraph dfd2route {
+  rankdir=TB;
+  nodesep=0.45; ranksep=0.85;
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=10.5, color="#5B6B66"];
+  edge [fontname="Helvetica", fontsize=8.5, color="#8A9A95", fontcolor="#3C4A46", arrowsize=0.65];
+
+  student [shape=box, style="filled", fillcolor="#FFFFFF", color="#1F2A27", penwidth=1.5, label=<<B>Student</B>>];
+  admin [shape=box, style="filled", fillcolor="#FFFFFF", color="#1F2A27", penwidth=1.5, label=<<B>Administrator</B>>];
+  p91 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">9.1</FONT></TD></TR><TR><TD>Load the traced<BR/>road network</TD></TR></TABLE>>];
+  p92 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">9.2</FONT></TD></TR><TR><TD>Build the weighted<BR/>graph once at start-up</TD></TR></TABLE>>];
+  p93 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">9.3</FONT></TD></TR><TR><TD>Resolve the two<BR/>stations</TD></TR></TABLE>>];
+  p94 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">9.4</FONT></TD></TR><TR><TD>Snap each station<BR/>onto the nearest road</TD></TR></TABLE>>];
+  p95 [shape=box, style="rounded,filled", fillcolor="#EAF3EF", color="#0B6B4F", penwidth=1.5, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#0B6B4F"><FONT FACE="Courier" POINT-SIZE="9">9.5</FONT></TD></TR><TR><TD>Shortest path<BR/>Dijkstra over roads</TD></TR></TABLE>>];
+  p96 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">9.6</FONT></TD></TR><TR><TD>Convert pixels to<BR/>percentages of the image</TD></TR></TABLE>>];
+  p97 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">9.7</FONT></TD></TR><TR><TD>Attach live<BR/>availability</TD></TR></TABLE>>];
+  d9 [shape=plaintext, label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#5B6B66"><TR><TD BORDER="1" SIDES="R" COLOR="#5B6B66"><FONT FACE="Courier" POINT-SIZE="10">D9</FONT></TD><TD><FONT FACE="Courier">campus-map.json</FONT><BR/><FONT POINT-SIZE="8">junctions, roads, scale</FONT></TD></TR></TABLE>>];
+  d2 [shape=plaintext, label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D2</FONT></TD><TD><FONT FACE="Courier">stations</FONT></TD></TR></TABLE>>];
+  d3 [shape=plaintext, label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D3</FONT></TD><TD><FONT FACE="Courier">bicycles</FONT></TD></TR></TABLE>>];
+  p91 -> d9 [label="junctions, roads,\nmetres per pixel", dir=both];
+  p91 -> p92 [label="nodes and segments"];
+  p92 -> p95 [label="adjacency with\npixel-length weights"];
+  student -> p93 [label="from station,\nto station"];
+  admin -> p93 [label="same endpoint,\nadmin map view"];
+  p93 -> d2 [label="map_x, map_y", dir=both];
+  p93 -> student [label="404 for an\nunknown station"];
+  p93 -> p94 [label="two map positions"];
+  p94 -> p95 [label="access legs onto\nthe network"];
+  p94 -> student [label="warning when a station\nsits far from any road"];
+  p95 -> p96 [label="ordered junction path;\nnever cuts through\nbuildings", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p96 -> p97 [label="polyline as percentages,\nzoom-independent"];
+  p97 -> d3 [label="cycles parked at\neach endpoint", dir=both];
+  p97 -> d2 [label="capacity", dir=both];
+  p97 -> student [label="polyline, approximate\ndistance, endpoint\navailability"];
+  p97 -> admin [label="same route for the\nadmin map"];
+}

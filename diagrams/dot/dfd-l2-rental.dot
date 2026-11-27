@@ -1,0 +1,45 @@
+digraph dfd2rental {
+  rankdir=TB;
+  nodesep=0.45; ranksep=0.85;
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=10.5, color="#5B6B66"];
+  edge [fontname="Helvetica", fontsize=8.5, color="#8A9A95", fontcolor="#3C4A46", arrowsize=0.65];
+
+  student [shape=box, style="filled", fillcolor="#FFFFFF", color="#1F2A27", penwidth=1.5, label=<<B>Student</B>>];
+  p31 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">3.1</FONT></TD></TR><TR><TD>Resolve QR code<BR/>to a bicycle</TD></TR></TABLE>>];
+  p32 [shape=box, style="rounded,filled", fillcolor="#EAF3EF", color="#0B6B4F", penwidth=1.5, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#0B6B4F"><FONT FACE="Courier" POINT-SIZE="9">3.2</FONT></TD></TR><TR><TD>Check the rider holds<BR/>no open ride</TD></TR></TABLE>>];
+  p33 [shape=box, style="rounded,filled", fillcolor="#EAF3EF", color="#0B6B4F", penwidth=1.5, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#0B6B4F"><FONT FACE="Courier" POINT-SIZE="9">3.3</FONT></TD></TR><TR><TD>Lock the cycle row<BR/>SELECT &#8230; FOR UPDATE</TD></TR></TABLE>>];
+  p34 [shape=box, style="rounded,filled", fillcolor="#EAF3EF", color="#0B6B4F", penwidth=1.5, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#0B6B4F"><FONT FACE="Courier" POINT-SIZE="9">3.4</FONT></TD></TR><TR><TD>Consult the<BR/>safety hold</TD></TR></TABLE>>];
+  p35 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">3.5</FONT></TD></TR><TR><TD>Open the rental<BR/>set cycle IN_USE</TD></TR></TABLE>>];
+  p36 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">3.6</FONT></TD></TR><TR><TD>Validate the<BR/>return station</TD></TR></TABLE>>];
+  p37 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">3.7</FONT></TD></TR><TR><TD>Complete the ride<BR/>park the cycle</TD></TR></TABLE>>];
+  p38 [shape=box, style="rounded,filled", fillcolor="#EAF3EF", color="#0B6B4F", penwidth=1.5, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#0B6B4F"><FONT FACE="Courier" POINT-SIZE="9">3.8</FONT></TD></TR><TR><TD>Apply a hold deferred<BR/>from mid-ride</TD></TR></TABLE>>];
+  p50 [shape=box, style="rounded,filled,dashed", fillcolor="#FFFFFF", color="#9AA8A3", penwidth=1.0, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">5.0</FONT></TD></TR><TR><TD>Manage maintenance<BR/>(level 1)</TD></TR></TABLE>>];
+  d3 [shape=plaintext, label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D3</FONT></TD><TD><FONT FACE="Courier">bicycles</FONT></TD></TR></TABLE>>];
+  d4 [shape=plaintext, label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D4</FONT></TD><TD><FONT FACE="Courier">rentals</FONT></TD></TR></TABLE>>];
+  d5 [shape=plaintext, label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D5</FONT></TD><TD><FONT FACE="Courier">maintenance_reports</FONT></TD></TR></TABLE>>];
+  d2 [shape=plaintext, label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D2</FONT></TD><TD><FONT FACE="Courier">stations</FONT></TD></TR></TABLE>>];
+  student -> p31 [label="scanned QR code"];
+  p31 -> d3 [label="lookup by qr_code", dir=both];
+  p31 -> p32 [label="bicycle id"];
+  p32 -> d4 [label="any ACTIVE rental\nfor this rider", dir=both];
+  p32 -> p33 [label="rider is free", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p33 -> d3 [label="row lock held for\nthe transaction", color="#0B6B4F", fontcolor="#0B6B4F", dir=both];
+  p33 -> p34 [label="status AVAILABLE"];
+  p34 -> d5 [label="unresolved HIGH or\nCRITICAL report?", dir=both];
+  p34 -> p35 [label="no hold", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p34 -> student [label="409 refusal:\ncycle on safety hold", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p32 -> student [label="409 refusal:\nride already open", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p35 -> d4 [label="insert ACTIVE rental"];
+  p35 -> d3 [label="IN_USE, station_id NULL"];
+  p35 -> student [label="active ride"];
+  student -> p36 [label="return station id"];
+  p36 -> d2 [label="station is ACTIVE", dir=both];
+  p36 -> p37 [label="accepted; capacity\nis never enforced here"];
+  p37 -> d4 [label="COMPLETED, ended_at"];
+  p37 -> p38 [label="cycle being parked"];
+  p38 -> d5 [label="hold filed during\nthe ride?", dir=both];
+  p38 -> d3 [label="park MAINTENANCE if held,\notherwise AVAILABLE", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p38 -> student [label="ride summary\nand duration"];
+  p50 -> p34 [label="hold state", color="#0B6B4F", fontcolor="#0B6B4F", style=dashed];
+}

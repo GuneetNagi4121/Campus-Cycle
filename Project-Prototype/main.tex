@@ -56,18 +56,18 @@
 
 % Student information
 \author{%
-  \texttt{102XXXXXXX} Guneet Singh Nagi \\
-  \texttt{102XXXXXXX} Prabhnoor Oberoi%
+  \texttt{1024030014} Guneet Singh Nagi \\
+  \texttt{1024031153} Prabhnoor Oberoi%
 }
 
 % Group number, degree, year, program
 \TitlePageSubText{%
-  Group: \texttt{XXXX} BE Third Year, CSE%
+  Group: \texttt{GROUP-NO} BE Third Year, CSE%
 }
 
 % Faculty advisor/guide name
 \AdvisorName{%
-  Dr. Faculty Member Name%
+  ADVISOR-NAME%
 }
 
 % Evaluation period and department info
@@ -375,34 +375,73 @@ depends on the vendor.
 \section{Data Flow}
 
 The data-flow diagrams use Gane--Sarson
-notation~\cite{demarco1979}. Figure~\ref{fig:dfd0}
-fixes the system boundary, Figure~\ref{fig:dfd1}
-decomposes the system into processes and stores, and
-Figures~\ref{fig:dfd2m} and~\ref{fig:dfd2g} explode
-the two processes whose internal behaviour is not
-obvious from the level-1 view.
+notation~\cite{demarco1979}: an external entity is a
+square box, a process is a rounded box carrying a
+number band, and a data store is an open-ended box
+with its D-number in the left cell. Throughout the
+set, a flow drawn in green is one that carries or
+enforces a system invariant --- the notation is used
+to distinguish rules from traffic.
+
+Figure~\ref{fig:dfd0} fixes the system boundary and
+itemises every flow across it rather than summarising
+it. Figure~\ref{fig:dfd1} decomposes the system into
+eight processes around the eight tables they use. The
+four remaining figures explode the processes whose
+internal behaviour is not obvious from the level-1
+view: rentals (Figure~\ref{fig:dfd2r}), maintenance
+(Figure~\ref{fig:dfd2m}), geofencing
+(Figure~\ref{fig:dfd2g}) and analytics
+(Figure~\ref{fig:dfd2a}).
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=\textwidth]{figures/dfd-l0.pdf}
-  \caption{Context diagram. The dashed feed records an
-    honest gap: the bicycles carry no GPS hardware, so
-    every position the system holds was submitted by
-    an administrator and stored as simulated.}
+  \caption{Context diagram. Each arrow is itemised
+    rather than summarised, so that the boundary can
+    be checked flow by flow. The dashed entity records
+    an honest gap: the bicycles carry no GPS hardware,
+    so every position the system holds was submitted
+    by an administrator and stored as simulated.}
   \label{fig:dfd0}
 \end{figure}
 
 % Turned sideways on a page of its own: at portrait
 % width the process labels would be too small to read
 % in print.
-\begin{sidewaysfigure}
+\begin{figure}[p]
   \centering
-  \includegraphics[height=0.85\textwidth]{figures/dfd-l1.pdf}
+  \includegraphics[width=\textwidth]{figures/dfd-l1.pdf}
   \caption{Level-1 data flow diagram. Eight processes
     around the eight tables they use. Writes to a
     store belong to exactly one process; reads cross
     freely.}
   \label{fig:dfd1}
+\end{figure}
+
+\subsection{Level 2: Rentals and Returns}
+
+Figure~\ref{fig:dfd2r} explodes process~3.0. It is the
+busiest diagram in the set because the rental path is
+where four separate rules meet: the rider must hold no
+open ride, the cycle must be available, the cycle must
+carry no safety hold, and the whole sequence must be
+safe against a second request arriving in the middle
+of it. Processes 3.2, 3.3 and 3.4 are the three
+checks; 3.8 is the one that is easy to forget, because
+a fault filed while a ride is in progress must take
+effect when that ride ends rather than at the moment
+it is filed.
+
+\begin{sidewaysfigure}
+  \centering
+  \includegraphics[width=\textheight,height=\textwidth,keepaspectratio]{figures/dfd-l2r.pdf}
+  \caption{Level-2 diagram for process 3.0, rentals
+    and returns. The green path is the invariant: a
+    rental is created only after three checks pass
+    inside one transaction that holds a row lock on
+    the bicycle.}
+  \label{fig:dfd2r}
 \end{sidewaysfigure}
 
 \section{Database Design}
@@ -570,8 +609,9 @@ definition:
     nearly-empty small one.
 \end{itemize}
 
-The map itself is drawn with Leaflet~\cite{leaflet}
-over OpenStreetMap tiles~\cite{openstreetmap}
+The map itself is drawn with
+Leaflet~\cite{leaflet}, over tiles supplied by
+OpenStreetMap~\cite{openstreetmap}
 (Figure~\ref{fig:uimap}). Markers are generated from
 the station data, so a marker always carries the
 current count; the frontend contains no availability
@@ -612,13 +652,14 @@ feature and a safety property meet, and
 Figure~\ref{fig:dfd2m} shows the resulting flow in
 full.
 
-\begin{figure}[htbp]
+\begin{figure}[p]
   \centering
   \includegraphics[width=\textwidth]{figures/dfd-l2m.pdf}
-  \caption{Maintenance and the safety hold. The
-    highlighted path is the invariant: an unresolved
-    high-severity report blocks the rental process and
-    blocks any return to service.}
+  \caption{Level-2 diagram for process 5.0,
+    maintenance and the safety hold. Resolving a
+    report and returning a cycle to service are
+    deliberately separate processes; 5.8 refuses while
+    any hold remains.}
   \label{fig:dfd2m}
 \end{figure}
 
@@ -684,6 +725,23 @@ action, and permits it only once no hold remains.
 
 \subsection{Usage Analytics}
 
+Figure~\ref{fig:dfd2a} explodes process~8.0 and makes
+visible the distinction the dashboard draws between
+figures that the date filter affects and figures it
+does not. Process 8.4 exists for a single reason: to
+turn a set of days on which something happened into a
+continuous axis that includes the days on which
+nothing did.
+
+\begin{sidewaysfigure}
+  \centering
+  \includegraphics[width=\textheight,height=\textwidth,keepaspectratio]{figures/dfd-l2a.pdf}
+  \caption{Level-2 diagram for process 8.0, analytics.
+    Snapshot figures (8.2) ignore the selected period;
+    period figures (8.3, 8.5, 8.6) do not.}
+  \label{fig:dfd2a}
+\end{sidewaysfigure}
+
 Every figure on the analytics dashboard
 (Figure~\ref{fig:uianalytics}) is a PostgreSQL
 aggregate over the live tables; nothing is cached or
@@ -731,13 +789,14 @@ location is never accepted as a bicycle's position,
 which is why the endpoint takes an explicit cycle
 identifier and is closed to students.
 
-\begin{figure}[htbp]
+\begin{figure}[p]
   \centering
   \includegraphics[width=\textwidth]{figures/dfd-l2g.pdf}
-  \caption{Geofencing. The source is validated before
-    anything else, and one unresolved alert per cycle
-    is what keeps a wandering bicycle from flooding
-    the alert list.}
+  \caption{Level-2 diagram for process 7.0,
+    geofencing. The caller is authorised and the
+    provenance of the position validated before
+    anything is stored; process 7.6 is where the
+    de-duplication invariant lives.}
   \label{fig:dfd2g}
 \end{figure}
 

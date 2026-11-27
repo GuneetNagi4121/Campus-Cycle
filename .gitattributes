@@ -1,0 +1,10 @@
+# Normalise line endings: the repository stores LF, checkouts use the platform
+# default. Without this, editing on Windows rewrites every line of every file.
+* text=auto eol=lf
+
+# Binary assets
+*.pdf  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.docx binary

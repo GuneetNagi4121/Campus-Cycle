@@ -1,0 +1,60 @@
+// Level 0 - context diagram
+digraph dfd0prop {
+  rankdir=LR;
+  nodesep=0.7; ranksep=2.1;
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=11, color="#4A5A55"];
+  edge [fontname="Helvetica", fontsize=9, color="#7A8A85", fontcolor="#3C4A46", arrowsize=0.75];
+
+  node [shape=box, style="filled", fillcolor="#FFFFFF", color="#1F2A27", penwidth=1.6];
+  student [label=<<B>Student</B>>];
+  admin   [label=<<B>Administrator</B>>];
+  osm     [label=<<B>OpenStreetMap</B><BR/>tile service>];
+  gps     [label=<<B>Telemetry source</B><BR/><FONT POINT-SIZE="9">future hardware</FONT>>,
+           style="filled,dashed", fillcolor="#FAFAFA", color="#8A9A95"];
+
+  sys [shape=box, style="rounded,filled", fillcolor="#EFF5F2", color="#0B6B4F", penwidth=1.7,
+       label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="8">
+         <TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#0B6B4F"><FONT FACE="Courier" POINT-SIZE="10">0</FONT></TD></TR>
+         <TR><TD><FONT POINT-SIZE="15"><B>CampusCycle</B></FONT><BR/><BR/><FONT POINT-SIZE="10">Proposed campus bicycle sharing and<BR/>mobility management system</FONT></TD></TR>
+       </TABLE>>];
+
+  { rank=same; student; osm; gps; }
+  { rank=same; admin; }
+
+  student -> sys [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="1">
+      <TR><TD ALIGN="LEFT">registration details, credentials</TD></TR>
+      <TR><TD ALIGN="LEFT">scanned QR code, return station</TD></TR>
+      <TR><TD ALIGN="LEFT">fault report: category, text, severity</TD></TR>
+      <TR><TD ALIGN="LEFT">ride-history and station filters</TD></TR>
+      </TABLE>>];
+
+  sys -> student [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="1">
+      <TR><TD ALIGN="LEFT">session token and role</TD></TR>
+      <TR><TD ALIGN="LEFT">stations with live availability</TD></TR>
+      <TR><TD ALIGN="LEFT">campus map with live availability</TD></TR>
+      <TR><TD ALIGN="LEFT">active ride and own ride history</TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT COLOR="#0B6B4F">refusal with reason: cycle unavailable,</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT COLOR="#0B6B4F">on safety hold, ride already open</FONT></TD></TR></TABLE>>];
+
+  admin -> sys [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="1">
+      <TR><TD ALIGN="LEFT">station and fleet definitions</TD></TR>
+      <TR><TD ALIGN="LEFT">bicycle status changes</TD></TR>
+      <TR><TD ALIGN="LEFT">maintenance transitions and notes</TD></TR>
+      <TR><TD ALIGN="LEFT">campus boundary polygon</TD></TR>
+      <TR><TD ALIGN="LEFT">cycle positions</TD></TR>
+      <TR><TD ALIGN="LEFT">reporting period</TD></TR></TABLE>>];
+
+  sys -> admin [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="1">
+      <TR><TD ALIGN="LEFT">fleet and station registers</TD></TR>
+      <TR><TD ALIGN="LEFT">every ride record, filtered and paged</TD></TR>
+      <TR><TD ALIGN="LEFT">maintenance queue and permitted</TD></TR>
+      <TR><TD ALIGN="LEFT">transitions, return-to-service offer</TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT COLOR="#0B6B4F">geofence alerts, one open per cycle</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT">usage analytics for the period</TD></TR>
+      <TR><TD ALIGN="LEFT">predicted demand per station</TD></TR>
+      <TR><TD ALIGN="LEFT">redistribution advice</TD></TR></TABLE>>];
+
+  osm -> sys [label="base map tiles"];
+  gps -> sys [label=<<FONT COLOR="#8A9A95">device-sourced position<BR ALIGN="LEFT"/></FONT>>, style=dashed, color="#8A9A95"];
+}

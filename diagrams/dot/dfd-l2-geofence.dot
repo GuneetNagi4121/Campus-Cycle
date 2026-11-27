@@ -1,0 +1,45 @@
+digraph dfd2geo {
+  rankdir=TB;
+  nodesep=0.45; ranksep=0.85;
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=10.5, color="#5B6B66"];
+  edge [fontname="Helvetica", fontsize=8.5, color="#8A9A95", fontcolor="#3C4A46", arrowsize=0.65];
+
+  admin [shape=box, style="filled", fillcolor="#FFFFFF", color="#1F2A27", penwidth=1.5, label=<<B>Administrator</B>>];
+  gps [shape=box, style="filled,dashed", fillcolor="#FAFAFA", color="#8A9A95", penwidth=1.5, label=<<B>Telemetry source</B><BR/><FONT POINT-SIZE="8.5">not yet built</FONT>>];
+  p71 [shape=box, style="rounded,filled", fillcolor="#EAF3EF", color="#0B6B4F", penwidth=1.5, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#0B6B4F"><FONT FACE="Courier" POINT-SIZE="9">7.1</FONT></TD></TR><TR><TD>Authorise the caller<BR/>admin role only</TD></TR></TABLE>>];
+  p72 [shape=box, style="rounded,filled", fillcolor="#EAF3EF", color="#0B6B4F", penwidth=1.5, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#0B6B4F"><FONT FACE="Courier" POINT-SIZE="9">7.2</FONT></TD></TR><TR><TD>Validate the position<BR/>source and range</TD></TR></TABLE>>];
+  p73 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">7.3</FONT></TD></TR><TR><TD>Store the ping<BR/>with its provenance</TD></TR></TABLE>>];
+  p74 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">7.4</FONT></TD></TR><TR><TD>Load the active<BR/>boundary polygon</TD></TR></TABLE>>];
+  p75 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">7.5</FONT></TD></TR><TR><TD>Test the point<BR/>against the polygon</TD></TR></TABLE>>];
+  p76 [shape=box, style="rounded,filled", fillcolor="#EAF3EF", color="#0B6B4F", penwidth=1.5, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#0B6B4F"><FONT FACE="Courier" POINT-SIZE="9">7.6</FONT></TD></TR><TR><TD>Open or increment<BR/>the alert</TD></TR></TABLE>>];
+  p77 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">7.7</FONT></TD></TR><TR><TD>Record a<BR/>re-entry</TD></TR></TABLE>>];
+  p78 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">7.8</FONT></TD></TR><TR><TD>Acknowledge or<BR/>resolve an alert</TD></TR></TABLE>>];
+  p79 [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1, label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">7.9</FONT></TD></TR><TR><TD>Replace the<BR/>boundary</TD></TR></TABLE>>];
+  d7 [shape=plaintext, label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D7</FONT></TD><TD><FONT FACE="Courier">bicycle_location_pings</FONT></TD></TR></TABLE>>];
+  d6 [shape=plaintext, label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D6</FONT></TD><TD><FONT FACE="Courier">geofence_config</FONT></TD></TR></TABLE>>];
+  d8 [shape=plaintext, label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D8</FONT></TD><TD><FONT FACE="Courier">geofence_events</FONT></TD></TR></TABLE>>];
+  d4 [shape=plaintext, label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D4</FONT></TD><TD><FONT FACE="Courier">rentals</FONT></TD></TR></TABLE>>];
+  admin -> p71 [label="cycle id, latitude,\nlongitude, source"];
+  gps -> p71 [label="device position", style=dashed];
+  p71 -> gps [label="401 until device\ntraffic is trusted", style=dashed];
+  p71 -> p72 [label="admin token verified", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p72 -> admin [label="400: source must be\nSIMULATED", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p72 -> p73 [label="accepted position", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p73 -> d7 [label="insert with\nsource = SIMULATED"];
+  p73 -> p74 [label="position"];
+  p74 -> d6 [label="active polygon", dir=both];
+  p74 -> p75 [label="polygon vertices"];
+  p75 -> p76 [label="outside: ray-casting\ntest returns false", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p75 -> p77 [label="inside"];
+  p75 -> admin [label="no boundary configured"];
+  p76 -> d4 [label="ride in progress\nat that moment", dir=both];
+  p76 -> d8 [label="one open event per cycle;\na repeat increments\nping_count", color="#0B6B4F", fontcolor="#0B6B4F", dir=both];
+  p76 -> admin [label="alert raised once", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p77 -> d8 [label="last position updated,\nalert stays open for\na person to judge", dir=both];
+  admin -> p78 [label="acknowledge or resolve"];
+  p78 -> d8 [label="status, resolved_at", dir=both];
+  p78 -> admin [label="updated alert list"];
+  admin -> p79 [label="new polygon"];
+  p79 -> d6 [label="deactivate old,\ninsert new; exactly one\nmay be active", color="#0B6B4F", fontcolor="#0B6B4F", dir=both];
+}

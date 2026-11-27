@@ -49,18 +49,18 @@
 
 % Student information
 \author{%
-  \texttt{102XXXXXXX} Guneet Singh Nagi \\
-  \texttt{102XXXXXXX} Prabhnoor Oberoi%
+  \texttt{1024030014} Guneet Singh Nagi \\
+  \texttt{1024031153} Prabhnoor Oberoi%
 }
 
 % Group number, degree, year, program
 \TitlePageSubText{%
-  Group: \texttt{XXXX} BE Third Year, CSE%
+  Group: \texttt{GROUP-NO} BE Third Year, CSE%
 }
 
 % Faculty advisor/guide name
 \AdvisorName{%
-  Dr. Faculty Member Name%
+  ADVISOR-NAME%
 }
 
 % Evaluation period and department info
@@ -283,6 +283,32 @@ The proposed architecture consists of:
     GPS and a lock mechanism for demonstrating real-time
     bicycle tracking.
 \end{enumerate}
+
+\section{System Boundary}
+
+Figure~\ref{fig:dfd0} is the context diagram for the
+proposed system, drawn in Gane--Sarson
+notation~\cite{demarco1979}: it fixes what the system
+is responsible for and itemises every flow across its
+boundary rather than summarising them. It is the
+diagram against which the detailed data-flow diagrams
+of the later reports are decomposed, and it includes
+the demand-prediction outputs that are proposed here
+as deliverables.
+
+The dashed entity is the optional hardware extension.
+It is drawn as an external source from the outset so
+that the design does not have to be rearranged if the
+tracking units are fitted: a device feed would enter
+the system through the same validated path as any
+other position.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/dfd-l0.pdf}
+  \caption{Context diagram for the proposed system.}
+  \label{fig:dfd0}
+\end{figure}
 
 \section{Technology Stack}
 

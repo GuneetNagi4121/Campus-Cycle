@@ -1,0 +1,92 @@
+// Level 1 - decomposition of process 0
+digraph dfd1p2 {
+  rankdir=LR;
+  nodesep=0.30; ranksep=2.0;
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=10.5, color="#4A5A55"];
+  edge [fontname="Helvetica", fontsize=8.5, color="#8A9A95", fontcolor="#3C4A46", arrowsize=0.62];
+
+  // ---- external entities --------------------------------------------------
+  node [shape=box, style=filled, fillcolor="#FFFFFF", color="#1F2A27", penwidth=1.5];
+  student [label=<<B>Student</B>>];
+  osm     [label=<<B>OpenStreetMap</B><BR/>tile service>];
+  admin   [label=<<B>Administrator</B>>];
+
+  // ---- processes ----------------------------------------------------------
+  node [shape=box, style="rounded,filled", fillcolor="#F6F8F7", color="#5B6B66", penwidth=1.1];
+  p1 [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">1.0</FONT></TD></TR><TR><TD>Authenticate<BR/>and authorise</TD></TR></TABLE>>];
+  p2 [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">2.0</FONT></TD></TR><TR><TD>Publish stations<BR/>and availability</TD></TR></TABLE>>];
+  p3 [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#0B6B4F"><FONT FACE="Courier" POINT-SIZE="9">3.0</FONT></TD></TR><TR><TD>Process rentals<BR/>and returns</TD></TR></TABLE>>, fillcolor="#EAF3EF", color="#0B6B4F", penwidth=1.5];
+  p4 [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">4.0</FONT></TD></TR><TR><TD>Provide<BR/>ride history</TD></TR></TABLE>>];
+  p5 [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#0B6B4F"><FONT FACE="Courier" POINT-SIZE="9">5.0</FONT></TD></TR><TR><TD>Manage<BR/>maintenance</TD></TR></TABLE>>, fillcolor="#EAF3EF", color="#0B6B4F", penwidth=1.5];
+  p6 [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">6.0</FONT></TD></TR><TR><TD>Manage stations<BR/>and fleet</TD></TR></TABLE>>];
+  p7 [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#0B6B4F"><FONT FACE="Courier" POINT-SIZE="9">7.0</FONT></TD></TR><TR><TD>Monitor<BR/>geofence</TD></TR></TABLE>>, fillcolor="#EAF3EF", color="#0B6B4F", penwidth=1.5];
+  p8 [label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="B" COLOR="#9AA8A3"><FONT FACE="Courier" POINT-SIZE="9">8.0</FONT></TD></TR><TR><TD>Generate<BR/>analytics</TD></TR></TABLE>>];
+
+  // ---- data stores --------------------------------------------------------
+  node [shape=plaintext, style="", fillcolor="", color="", penwidth=1];
+  d1 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D1</FONT></TD><TD><FONT FACE="Courier">users</FONT></TD></TR></TABLE>>];
+  d2 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D2</FONT></TD><TD><FONT FACE="Courier">stations</FONT></TD></TR></TABLE>>];
+  d3 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D3</FONT></TD><TD><FONT FACE="Courier">bicycles</FONT></TD></TR></TABLE>>];
+  d4 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D4</FONT></TD><TD><FONT FACE="Courier">rentals</FONT></TD></TR></TABLE>>];
+  d5 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D5</FONT></TD><TD><FONT FACE="Courier">maintenance_reports</FONT></TD></TR></TABLE>>];
+  d6 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D6</FONT></TD><TD><FONT FACE="Courier">geofence_config</FONT></TD></TR></TABLE>>];
+  d7 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D7</FONT></TD><TD><FONT FACE="Courier">bicycle_location_pings</FONT></TD></TR></TABLE>>];
+  d8 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#1F2A27"><TR><TD BORDER="1" SIDES="R" COLOR="#1F2A27"><FONT FACE="Courier" POINT-SIZE="10">D8</FONT></TD><TD><FONT FACE="Courier">geofence_events</FONT></TD></TR></TABLE>>];
+
+  { rank=same; student; osm; admin; }
+  { rank=same; p1; p2; p3; p4; p5; p6; p7; p8; }
+  { rank=same; d1; d2; d3; d4; d5; d6; d7; d8; }
+
+  // fix the vertical order within each column so flows run mostly straight
+  edge [style=invis, label="", weight=100];
+  student -> osm -> admin;
+  edge [style=solid, weight=1];
+
+  // ---- student side -------------------------------------------------------
+  student -> p1 [label="credentials"];
+  p1 -> student [label="token, role"];
+  student -> p2 [label="station filters"];
+  p2 -> student [label="availability"];
+  student -> p3 [label="QR code,\nreturn station"];
+  p3 -> student [label="active ride"];
+  student -> p4 [label="own-ride filters"];
+  p4 -> student [label="ride history"];
+  student -> p5 [label="fault report"];
+  p5 -> student [label="acknowledgement"];
+
+  // ---- administrator side -------------------------------------------------
+  admin -> p6 [label="station, cycle,\ncapacity, status"];
+  p6 -> admin [label="registers"];
+  admin -> p5 [label="transition,\nresolution notes"];
+  p5 -> admin [label="queue,\nreturn-to-service"];
+  admin -> p7 [label="boundary polygon,\nsimulated position"];
+  p7 -> admin [label="open alerts", color="#0B6B4F", fontcolor="#0B6B4F"];
+  admin -> p8 [label="reporting period"];
+  p8 -> admin [label="fleet, period and\nstation figures"];
+  admin -> p4 [label="all-ride filters"];
+  p4 -> admin [label="every ride"];
+
+  // ---- store access -------------------------------------------------------
+  p1 -> d1 [dir=both, label="account"];
+  p2 -> d2 [label="read"];
+  p2 -> d3 [label="read"];
+  osm -> p2 [label="base map tiles"];
+  p3 -> d3 [dir=both, label="lock, set IN_USE / park", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p3 -> d4 [dir=both, label="open / complete rental", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p3 -> d5 [label="safety-hold check", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p3 -> d2 [label="return station"];
+  p4 -> d4 [label="read"];
+  p5 -> d5 [dir=both, label="report, status"];
+  p5 -> d3 [label="apply / release hold", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p6 -> d2 [dir=both, label="write"];
+  p6 -> d3 [dir=both, label="write"];
+  p7 -> d6 [dir=both, label="boundary"];
+  p7 -> d7 [label="ping"];
+  p7 -> d8 [dir=both, label="one open alert per cycle", color="#0B6B4F", fontcolor="#0B6B4F"];
+  p7 -> d4 [label="ride in progress"];
+  p8 -> d4 [label="aggregate"];
+  p8 -> d3 [label="aggregate"];
+  p8 -> d2 [label="aggregate"];
+  p8 -> d5 [label="aggregate"];
+}
